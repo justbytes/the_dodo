@@ -95,77 +95,53 @@ class DodoEggMonitorV2 extends Monitor {
    * @param log
    */
   processPriceMovement(log) {
-    let currentPrice;
+    let currentPrice, reserve;
 
     // Decode log data
     const decodedLog = IUNISWAPV2PAIR_INTERFACE.parseLog(log);
     const { reserve0, reserve1 } = decodedLog.args;
 
-    // Get the price so that its base/new i.e. weth/xxx
+    // Uniform the price to the decimal of the given token
+    const reserve0Adjusted = ethers.parseUnits(
+      reserve0.toString(),
+      18 - Number(this.dodoEgg.baseTokenDecimal)
+    );
+
+    const reserve1Adjusted = ethers.parseUnits(
+      reserve1.toString(),
+      18 - Number(this.dodoEgg.newTokenDecimal)
+    );
+
     if (this.dodoEgg.baseAssetReserve == 0) {
-      // Check if liquidity is still there
-      if (
-        reserve0 <
-        ethers.parseUnits("0.001", Number(this.dodoEgg.baseTokenDecimal))
-      ) {
-        // Signal that rug pull took place
-        console.log(
-          `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
-        );
-
-        this.stopTargetListener();
-        // TODO: Send pair to DodoDetective
-        //  ( Not yet implemented but will conduct audit on tokens
-        //    and identifiy cause type of rug pull and investigate
-        //    the addressess assosiated with )
-      }
-
-      // Uniform the price to the decimal of the given token
-      const reserve0Adjusted = ethers.parseUnits(
-        reserve0.toString(),
-        18 - Number(this.dodoEgg.baseTokenDecimal)
-      );
-
-      const reserve1Adjusted = ethers.parseUnits(
-        reserve1.toString(),
-        18 - Number(this.dodoEgg.newTokenDecimal)
-      );
-
+      reserve = reserve0;
       currentPrice = (reserve0Adjusted * ethers.WeiPerEther) / reserve1Adjusted;
     } else {
-      // Check if liquidity is still there
-      if (
-        reserve1 <
-        ethers.parseUnits("0.001", Number(this.dodoEgg.baseTokenDecimal))
-      ) {
-        // Signal that rug pull took place
-        console.log(
-          `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
-        );
-
-        this.stopTargetListener();
-        // TODO: Send pair to DodoDetective
-        //  ( Not yet implemented but will conduct audit on tokens
-        //    and identifiy cause type of rug pull and investigate
-        //    the addressess assosiated with )
-      }
-
-      // Uniform the price to the decimal of the given token
-      const reserve0Adjusted = ethers.parseUnits(
-        reserve0.toString(),
-        18 - Number(this.dodoEgg.newTokenDecimal)
-      );
-
-      const reserve1Adjusted = ethers.parseUnits(
-        reserve1.toString(),
-        18 - Number(this.dodoEgg.baseTokenDecimal)
-      );
+      reserve = reserve1;
       currentPrice = (reserve1Adjusted * ethers.WeiPerEther) / reserve0Adjusted;
+    }
+
+    const zero = ethers.parseUnits(
+      "0.001",
+      Number(this.dodoEgg.baseTokenDecimal)
+    );
+
+    // Signal that rug pull took place
+    if (reserve < zero) {
+      console.log(
+        `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
+      );
+      this.dodoEgg.tradeInProgress = false;
+      this.stopTargetListener();
+      // TODO: Send pair to DodoDetective
+      //  ( Not yet implemented but will conduct audit on tokens
+      //    and identifiy cause type of rug pull and investigate
+      //    the addressess assosiated with )
     }
 
     // If the currentPrice is over the targetPrice stop the listener.
     if (currentPrice > this.dodoEgg.targetPrice) {
       // TODO: Sell tokens for profit
+      this.dodoEgg.tradeInProgress = false;
       this.stopTargetListener();
       console.log(
         `

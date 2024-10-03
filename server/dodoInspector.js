@@ -1,7 +1,6 @@
 const WebSocket = require("ws");
 const wss = new WebSocket.Server({ port: 8000 });
 const dodoTrader = new WebSocket("ws://127.0.0.1:8001");
-const DodoEgg = require("./class/DodoEgg");
 const { serealizeDodo, deserealizeDodo } = require("./utils/serialConverter");
 
 /**
@@ -24,10 +23,18 @@ wss.on("connection", (ws) => {
     // Convert the data into a DodoEgg object
     const dodoEgg = deserealizeDodo(data);
 
-    // console.log(dodoEgg);
-
+    let audit;
     // Conduct a saftey audit
-    const audit = await dodoEgg.conductAudit();
+    try {
+      audit = await dodoEgg.conductAudit();
+    } catch (error) {
+      console.error(
+        "There was an error during the audit. \n Skipping pair " +
+          dodoEgg.pairAddress +
+          " \n\n"
+      );
+      return;
+    }
 
     // Do not continue if the aduit failed
     if (!audit) return;
@@ -45,6 +52,7 @@ wss.on("connection", (ws) => {
 
 console.log("Dodo Inspector has begun inspecting on PORT 8000");
 
+// const DodoEgg = require("./class/DodoEgg");
 // const v3 = false;
 // const chain = "1";
 // const id = "0xA43fe16908251ee70EF74718545e4FE6C5cCEc9f";

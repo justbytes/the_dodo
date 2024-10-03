@@ -56,66 +56,59 @@ class Monitor {
     if (this.stop) this.stop = false;
 
     return new Promise(async (resolve) => {
-      const codeDeployed = await verifyCode(
-        await this.alchemy.config.getProvider(),
-        this.dodoEgg.newTokenAddress,
-        this.dodoEgg.pairAddress
-      );
-
-      if (!codeDeployed) {
-        let retry = 0;
-
-        while (retry < 5) {
-          const codeDeployed = await verifyCode(
-            await this.alchemy.config.getProvider(),
-            this.dodoEgg.newTokenAddress,
-            this.dodoEgg.pairAddress
-          );
-
-          if (!codeDeployed) {
-            await new Promise((resolve) => setTimeout(resolve, 2500));
-            retry++;
-            if (retry == 5) {
-              resolve({ liquidAdded: true });
-            }
-          } else {
-            retry = 5;
-          }
-        }
-      }
+      // try {
+      //   await verifyCode(
+      //     await this.alchemy.config.getProvider(),
+      //     this.dodoEgg.newTokenAddress,
+      //     this.dodoEgg.pairAddress
+      //   );
+      // } catch (error) {
+      //   console.log(
+      //     "***  ERROR | There was an error verifying token and pair deployment  ***\n"
+      //   );
+      //   resolve({ liquidAdded: false });
+      // }
 
       // Checks to ensure liquidity is added
-      while (this.stop === false) {
-        // Create a balance of filter with alchemy-sdk
-        const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
-          this.dodoEgg.pairAddress,
-        ]);
+      try {
+        while (this.stop === false) {
+          // Create a balance of filter with alchemy-sdk
+          const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
+            this.dodoEgg.pairAddress,
+          ]);
 
-        // Call for the balance
-        const balance = BigInt(
-          await this.alchemy.core.call({
-            to: this.dodoEgg.baseTokenAddress,
-            data: filter,
-          })
+          // Call for the balance
+          const balance = BigInt(
+            await this.alchemy.core.call({
+              to: this.dodoEgg.baseTokenAddress,
+              data: filter,
+            })
+          );
+
+          // If the balance is greater then 0 resolve else wait 5 seconds and retry
+          if (balance > 0) {
+            console.log("Liquidity added: ", balance);
+            resolve({ liquidAdded: true });
+            this.stop = true;
+          } else {
+            await new Promise((resolve) => setTimeout(resolve, 2500));
+            count++;
+          }
+
+          // Allows for a 1 minute and 15 second window to look for liquidity
+          // before moving on
+          if (count === 30) {
+            console.log("Liquidity was not added.");
+            resolve({ liquidAdded: false });
+            this.stop = true;
+          }
+        }
+      } catch (error) {
+        console.log(
+          "ERROR | There was an error calling balanceOf on pair: ",
+          this.dodoEgg.pairAddress
         );
-
-        // If the balance is greater then 0 resolve else wait 5 seconds and retry
-        if (balance > 0) {
-          console.log("Liquidity added: ", balance);
-          resolve({ liquidAdded: true });
-          this.stop = true;
-        } else {
-          await new Promise((resolve) => setTimeout(resolve, 2500));
-          count++;
-        }
-
-        // Allows for a 1 minute and 15 second window to look for liquidity
-        // before moving on
-        if (count === 30) {
-          console.log("Liquidity was not added.");
-          resolve({ liquidAdded: false });
-          this.stop = true;
-        }
+        resolve({ liquidAdded: false });
       }
     });
   }
@@ -125,6 +118,13 @@ class Monitor {
    */
   stopLiquidityListener() {
     this.stop = true;
+  }
+
+  restartTargetListener() {
+    this.alchemy.ws.on(
+      this.dodoEgg.targetListener.filter,
+      this.dodoEgg.targetListener.listener
+    );
   }
 
   /**

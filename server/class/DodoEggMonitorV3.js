@@ -44,53 +44,6 @@ class DodoEggMonitorV3 extends Monitor {
     }
   }
 
-  // /**
-  //  * Every 5 seconds calls balance of on the base token address
-  //  * @returns the balance of the base token in the pair
-  //  */
-  // async liquidityListener() {
-  //   return new Promise(async (resolve, reject) => {
-  //     // Filter by the event we want to listen to
-  //     const filter = {
-  //       address: this.dodoEgg.pairAddress,
-  //       topics: [IUniswapV3PoolInterface.getEvent("Mint").topicHash],
-  //     };
-
-  //     // Function that will be carried out when listener is triggered
-  //     const listener = (log) => {
-  //       // Check the price movement to see is it went above the targetPrice
-  //       const result = this.processMintEvent(log);
-
-  //       if (result) {
-  //         console.log("Liquidity was added!");
-
-  //         this.alchemy.ws.off(filter, listener);
-  //         resolve({ liquidAdded: true });
-  //       }
-  //     };
-
-  //     // Listen to mint events
-  //     this.alchemy.ws.on(filter, listener);
-  //     this.dodoEgg.liquidityListener = { filter: filter, listener: listener };
-
-  //     // 5 minutes timeout
-  //     setTimeout(() => {
-  //       this.alchemy.ws.off(filter, listener);
-  //       reject({ liquidAdded: false });
-  //     }, 300000);
-  //   });
-  // }
-
-  // processMintEvent(log) {
-  //   const decodedLog = IUniswapV3PoolInterface.parseLog(log);
-  //   const { sender, owner, tickLower, tickUpper, amount, amount0, amount1 } =
-  //     decodedLog.args;
-
-  //   if (amount0 > 0 && amount1 > 0) {
-  //     return true;
-  //   }
-  // }
-
   /**
    * Activates the v3 target listener
    */
@@ -132,25 +85,29 @@ class DodoEggMonitorV3 extends Monitor {
       tick,
     } = decodedLog.args;
 
-    const baseTokenContract = new ethers.Contract(
-      this.dodoEgg.baseTokenAddress,
-      IERC20_ABI,
-      this.provider
+    const filter = IUniswapV3PoolInterface.encodeFunctionData("balanceOf", [
+      this.dodoEgg.pairAddress,
+    ]);
+
+    // Call for the balance
+    const baseAssetBalance = BigInt(
+      await this.alchemy.core.call({
+        to: this.dodoEgg.baseTokenAddress,
+        data: filter,
+      })
     );
 
-    const baseAssetBalance = await baseTokenContract.balanceOf(
-      this.dodoEgg.pairAddress
+    const zero = ethers.parseUnits(
+      "0.001",
+      Number(this.dodoEgg.baseTokenDecimal)
     );
 
-    if (
-      baseAssetBalance <
-      ethers.parseUnits("0.001", Number(this.dodoEgg.baseTokenDecimal))
-    ) {
+    if (baseAssetBalance < zero) {
       // Signal that rug pull took place
       console.log(
         `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
       );
-
+      this.dodoEgg.tradeInProgress = false;
       this.stopTargetListener();
       // TODO: Send pair to DodoDetective
       //  ( Not yet implemented but will conduct audit on tokens
@@ -160,7 +117,7 @@ class DodoEggMonitorV3 extends Monitor {
 
     if (sqrtPriceX96 > this.dodoEgg.targetPrice) {
       // TODO: Sell tokens for profit
-
+      this.dodoEgg.tradeInProgress = false;
       this.stopTargetListener();
       console.log(
         `

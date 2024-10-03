@@ -50,8 +50,10 @@ class DodoEgg {
     this.targetListener = targetListener;
 
     this.dodoEggMonitor = null;
+    this.monitorBattery = null;
 
     // Activate monitor
+    this.batteryLife = 15 * 60 * 1000; // 15 minutes in milliseconds
     this.plugInMonitor();
   }
 
@@ -67,73 +69,97 @@ class DodoEgg {
     }
   }
 
+  swapMonitorBattery() {
+    if (this.monitorBattery) {
+      clearTimeout(this.monitorBattery);
+    }
+
+    this.monitorBattery = setTimeout(() => {
+      console.log("**  Battery will be replaced in 15 minutes!  **");
+      this.plugInMonitor();
+      if (this.tradeInProgress == true) {
+        this.dodoEggMonitor.restartTargetListener();
+      }
+    }, this.batteryLife);
+  }
+
   /**
    * Checks for liquidity and does a safty audit for malisious code
    * @returns true if the audit was safe false if it was unsafe
    */
   async conductAudit() {
-    // Check for liqudity
-    const waitForLiquid = this.dodoEggMonitor.liquidityListener();
+    try {
+      // Check for liqudity
+      const waitForLiquid = await this.dodoEggMonitor.liquidityListener();
 
-    // Check for a malicious code
-    const auditResults = audit(this.chainId, this.newTokenAddress);
+      // Check for a malicious code
+      const auditResults = await audit(this.chainId, this.newTokenAddress);
 
-    // Race between the token sniffer and the Mint event
-    const result = await Promise.race([auditResults, waitForLiquid]);
+      // Race between the token sniffer and the Mint event
+      //const result = await Promise.race([auditResults, waitForLiquid]);
 
-    if (result.liquidAdded) {
-      // Wait for token aduit results
-      const snifferResult = await auditResults;
+      if (result.liquidAdded) {
+        // Wait for token aduit results
+        const snifferResult = await auditResults;
 
-      if (snifferResult.isSafe) {
-        console.log(
-          "******    Audit Results: Pass   ******\n",
-          this.pairAddress
-        );
-        console.log("");
-        this.auditResults = snifferResult.auditResults;
+        if (snifferResult.isSafe) {
+          console.log(
+            "******    Audit Results: Pass   ******\n",
+            this.pairAddress
+          );
+          console.log("");
+          this.auditResults = snifferResult.auditResults;
 
-        return true;
-      } else {
-        console.log(`Token failed audit, unsafe pair: ${this.pairAddress}`);
-        console.log("");
-
-        return false;
-      }
-    } else {
-      // Token sniffer completed first
-      if (result.isSafe) {
-        console.log(
-          `Token is safe, waiting for liquidity on ${this.pairAddress}`
-        );
-        console.log("");
-
-        const liquidCheck = await waitForLiquid;
-
-        if (liquidCheck === false) {
-          console.log(`Token didn't recieve liquidity`);
+          return true;
+        } else {
+          console.log(`Token failed audit, unsafe pair: ${this.pairAddress}`);
           console.log("");
 
           return false;
         }
-
-        console.log(
-          "******    Audit Results: Pass   ******\n",
-          this.pairAddress
-        );
-        console.log("");
-
-        this.auditResults = snifferResult.auditResults;
-
-        return true;
       } else {
-        console.log(`Token failed audit, unsafe pair: ${this.pairAddress}`);
-        console.log("");
+        // Token sniffer completed first
+        if (result.isSafe) {
+          console.log(
+            `Token is safe, waiting for liquidity on ${this.pairAddress}`
+          );
+          console.log("");
 
-        this.dodoEggMonitor.stopLiquidityListener();
+          const liquidCheck = await waitForLiquid;
 
-        return false;
+          if (liquidCheck === false) {
+            console.log(`Token didn't recieve liquidity`);
+            console.log("");
+
+            return false;
+          }
+
+          console.log(
+            "******    Audit Results: Pass   ******\n",
+            this.pairAddress
+          );
+          console.log("");
+
+          this.auditResults = snifferResult.auditResults;
+
+          return true;
+        } else {
+          console.log(`Token failed audit, unsafe pair: ${this.pairAddress}`);
+          console.log("");
+
+          this.dodoEggMonitor.stopLiquidityListener();
+
+          return false;
+        }
       }
+    } catch (error) {
+      console.log(
+        "**  There was an error during the audit!  **\n **  Skipping pair: ",
+        this.pairAddress
+      );
+      console.log("");
+      this.dodoEggMonitor.stopLiquidityListener();
+      return false;
     }
   }
 
