@@ -29,7 +29,7 @@ wss.on("connection", (ws) => {
       audit = await dodoEgg.conductAudit();
     } catch (error) {
       console.error(
-        "There was an error during the audit. \n Skipping pair " +
+        "Dodo Inspector: Unsafe pair detected. \n Skipping pair " +
           dodoEgg.pairAddress +
           " \n\n"
       );

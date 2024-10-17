@@ -144,6 +144,9 @@ const securityCheck = async (chainId, targetAddress) => {
   // Perform the security audit with GoPlus.tokenSecurity data call
   const data = await getSecurityData(chainId, targetAddress);
 
+  // Covert all this to use a switch statement by taking all of the data from getSecurityData and then adding all of the values i.e. is_proxy == "0" is_mintable == "0" etc...
+  // add them to an array then run the array through a switch statement to see if any of the values are true if the array equals a safe pair and false if it doesn't with the reason for is failure
+
   // If the contract does not have open source code then it fails immediately
   if (data.is_open_source == "1") {
     // Contract Security Audit
@@ -228,7 +231,7 @@ const audit = async (chainId, targetAddress) => {
     }
 
     const auditResults = { ...malicious.fields, ...secure.fields };
-    resolve({ isSafe: true, auditResults: auditResults });
+    resolve({ isSafe: true, fields: auditResults });
     return;
   });
 };

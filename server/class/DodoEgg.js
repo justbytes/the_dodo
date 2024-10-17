@@ -6,48 +6,11 @@ const increaseByPercentage = require("./utils/increaseByPercentage");
 class DodoEgg {
   /**
    * This constucter is used initially to create a new DodoEgg
-   * @param {*} id uuidv4()
-   * @param {*} chainId chain id of the blockchain
-   * @param {*} newTokenAddress new token address
-   * @param {*} baseTokenAddress base asset address (i.e. weth, usdc, ..)
-   * @param {*} pairAddress address of the token pair
-   * @param {*} v3 true if using Uniswap v3 protocol, false for Uniswap v2 protocol
+   * @param {object} data JSON data of a DodoEgg
    */
-  constructor(
-    id,
-    chainId,
-    newTokenAddress,
-    baseTokenAddress,
-    pairAddress,
-    v3,
-    auditResults,
-    intialPrice,
-    targetPrice,
-    tradeInProgress,
-    baseTokenDecimal,
-    newTokenDecimal,
-    baseAssetReserve,
-    liquidityListener,
-    targetListener
-  ) {
+  constructor(data) {
     // Instance variables
-    this.id = id;
-    this.chainId = chainId;
-    this.newTokenAddress = newTokenAddress;
-    this.baseTokenAddress = baseTokenAddress;
-    this.pairAddress = pairAddress;
-    this.v3 = v3;
-
-    this.auditResults = auditResults;
-    this.intialPrice = intialPrice;
-    this.targetPrice = targetPrice;
-    this.tradeInProgress = tradeInProgress;
-
-    this.baseTokenDecimal = baseTokenDecimal;
-    this.newTokenDecimal = newTokenDecimal;
-    this.baseAssetReserve = baseAssetReserve;
-    this.liquidityListener = liquidityListener;
-    this.targetListener = targetListener;
+    this.data = data;
 
     this.dodoEggMonitor = null;
     this.monitorBattery = null;
@@ -62,10 +25,10 @@ class DodoEgg {
    * getPrice, getTargetPrice, start/stop listeners
    */
   plugInMonitor() {
-    if (this.v3) {
-      this.dodoEggMonitor = new DodoEggMonitorV3(this);
+    if (this.data.v3) {
+      this.dodoEggMonitor = new DodoEggMonitorV3(this.data);
     } else {
-      this.dodoEggMonitor = new DodoEggMonitorV2(this);
+      this.dodoEggMonitor = new DodoEggMonitorV2(this.data);
     }
   }
 
@@ -77,7 +40,7 @@ class DodoEgg {
     this.monitorBattery = setTimeout(() => {
       console.log("**  Battery will be replaced in 15 minutes!  **");
       this.plugInMonitor();
-      if (this.tradeInProgress == true) {
+      if (this.data.tradeInProgress == true) {
         this.dodoEggMonitor.restartTargetListener();
       }
     }, this.batteryLife);
@@ -88,77 +51,63 @@ class DodoEgg {
    * @returns true if the audit was safe false if it was unsafe
    */
   async conductAudit() {
+    //
+    // Check for liquidity
     try {
-      // Check for liqudity
-      const waitForLiquid = await this.dodoEggMonitor.liquidityListener();
+      const liqudityCheck = await this.dodoEggMonitor.liquidityListener();
 
-      // Check for a malicious code
-      const auditResults = await audit(this.chainId, this.newTokenAddress);
+      if (liqudityCheck === false) {
+        console.log(`Token didn't recieve liquidity`);
+        console.log("");
 
-      // Race between the token sniffer and the Mint event
-      //const result = await Promise.race([auditResults, waitForLiquid]);
-
-      if (result.liquidAdded) {
-        // Wait for token aduit results
-        const snifferResult = await auditResults;
-
-        if (snifferResult.isSafe) {
-          console.log(
-            "******    Audit Results: Pass   ******\n",
-            this.pairAddress
-          );
-          console.log("");
-          this.auditResults = snifferResult.auditResults;
-
-          return true;
-        } else {
-          console.log(`Token failed audit, unsafe pair: ${this.pairAddress}`);
-          console.log("");
-
-          return false;
-        }
-      } else {
-        // Token sniffer completed first
-        if (result.isSafe) {
-          console.log(
-            `Token is safe, waiting for liquidity on ${this.pairAddress}`
-          );
-          console.log("");
-
-          const liquidCheck = await waitForLiquid;
-
-          if (liquidCheck === false) {
-            console.log(`Token didn't recieve liquidity`);
-            console.log("");
-
-            return false;
-          }
-
-          console.log(
-            "******    Audit Results: Pass   ******\n",
-            this.pairAddress
-          );
-          console.log("");
-
-          this.auditResults = snifferResult.auditResults;
-
-          return true;
-        } else {
-          console.log(`Token failed audit, unsafe pair: ${this.pairAddress}`);
-          console.log("");
-
-          this.dodoEggMonitor.stopLiquidityListener();
-
-          return false;
-        }
+        return false;
       }
     } catch (error) {
       console.log(
-        "**  There was an error during the audit!  **\n **  Skipping pair: ",
-        this.pairAddress
+        "**  DodoEgg | error when checking for liquidity!  **\n",
+        error
       );
       console.log("");
+
       this.dodoEggMonitor.stopLiquidityListener();
+      return false;
+    }
+
+    // Check for a malicious code
+    try {
+      const auditResults = await audit(
+        this.data.chainId,
+        this.data.newTokenAddress
+      );
+
+      // If the audit fails, return false
+      if (!auditResults.isSafe) {
+        console.log(
+          "******    Audit Results: Fail   ******\n",
+          this.data.pairAddress
+        );
+        console.log("");
+
+        return false;
+      }
+
+      // If the audit passes, return true
+      console.log(
+        "******    Audit Results: Pass   ******\n",
+        this.data.pairAddress
+      );
+      console.log("");
+
+      // Update the audit results
+      this.data.auditResults = auditResults.fields;
+
+      // Return true
+      return true;
+    } catch (error) {
+      // If there was an error during the audit, return false
+      console.log("**  DodoEgg | error during the audit!  **\n", error);
+      console.log("");
+
       return false;
     }
   }
@@ -169,12 +118,12 @@ class DodoEgg {
   async setTargetPrice() {
     // Get the current price and update the instance variable
     const currentPrice = await this.dodoEggMonitor.getPrice();
-    this.intialPrice = currentPrice;
+    this.data.intialPrice = currentPrice;
 
     // Set the target price by increasing the current price 25%
-    this.targetPrice = increaseByPercentage(currentPrice, 25);
+    this.data.targetPrice = increaseByPercentage(currentPrice, 25);
 
-    return this.targetPrice;
+    return this.data.targetPrice;
   }
 
   /**
@@ -189,7 +138,7 @@ class DodoEgg {
   async incubator() {
     // TODO: SWAP FOR THE NEW TOKEN
 
-    console.log("** Target Price  **\n", this.targetPrice);
+    console.log("** Target Price  **\n", this.data.targetPrice);
     console.log("");
 
     // Todo activate listenr
@@ -206,21 +155,23 @@ class DodoEgg {
    */
   getInfo() {
     return {
-      id: this.id,
-      chainId: this.chainId,
-      newToken: this.newTokenAddress,
-      baseToken: this.baseTokenAddress,
-      pairAddress: this.pairAddress,
-      v3: this.v3,
-      auditResults: this.auditResults,
-      intialPrice: this.intialPrice == null ? "0" : this.intialPrice.toString(),
-      targetPrice: this.targetPrice == null ? "0" : this.targetPrice.toString(),
-      tradeInProgress: this.tradeInProgress,
-      baseTokenDecimal: this.baseTokenDecimal,
-      newTokenDecimal: this.newTokenDecimal,
-      baseAssetReserve: this.baseAssetReserve,
-      liquidityListener: this.liquidityListener,
-      targetListener: this.targetListener,
+      id: this.data.id,
+      chainId: this.data.chainId,
+      newToken: this.data.newTokenAddress,
+      baseToken: this.data.baseTokenAddress,
+      pairAddress: this.data.pairAddress,
+      v3: this.data.v3,
+      auditResults: this.data.auditResults,
+      intialPrice:
+        this.data.intialPrice == null ? "0" : this.data.intialPrice.toString(),
+      targetPrice:
+        this.data.targetPrice == null ? "0" : this.data.targetPrice.toString(),
+      tradeInProgress: this.data.tradeInProgress,
+      baseTokenDecimal: this.data.baseTokenDecimal,
+      newTokenDecimal: this.data.newTokenDecimal,
+      baseAssetReserve: this.data.baseAssetReserve,
+      liquidityListener: this.data.liquidityListener,
+      targetListener: this.data.targetListener,
     };
   }
 }

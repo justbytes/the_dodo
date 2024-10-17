@@ -56,7 +56,7 @@ class DodoEggMonitorV3 extends Monitor {
 
     // Listen for swap events
     const listener = (log) => {
-      console.log("Checking sync for updated price");
+      console.log("Checking swap for updated price");
 
       // Check the price movement to see is it went above the targetPrice
       this.processPriceMovement(log);

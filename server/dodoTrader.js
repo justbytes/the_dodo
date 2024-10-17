@@ -10,15 +10,17 @@ wss.on("connection", (ws) => {
 
   // Listen for a messeage that should be coming from the listener
   ws.on("message", async (data) => {
-    console.log("******   Dodo Trader Recieved Data   ******");
+    console.log("******   Dodo Trader Recieved Data   ******\n");
     console.log("");
 
     // Convert the data into a DodoEgg object
     const dodoEgg = deserealizeDodo(data);
 
+    console.log("DodoTrader: ", dodoEgg.data);
+
     // Add a new pair to the Map if it hasn't already been added
-    if (!dodosTrading.has(dodoEgg.id)) {
-      dodosTrading.set(dodoEgg.id, dodoEgg);
+    if (!dodosTrading.has(dodoEgg.data.id)) {
+      dodosTrading.set(dodoEgg.data.id, dodoEgg);
     }
 
     // Set a target price

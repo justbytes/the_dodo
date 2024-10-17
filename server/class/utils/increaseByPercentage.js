@@ -1,4 +1,4 @@
-const increaseByPercentage = (value, percentage) => {
+module.exports = increaseByPercentage = (value, percentage) => {
   // Convert percentage to basis points (1% = 100 basis points)
   const basisPoints = BigInt(percentage * 100);
 
@@ -8,5 +8,3 @@ const increaseByPercentage = (value, percentage) => {
 
   return newValue;
 };
-
-module.exports = increaseByPercentage;

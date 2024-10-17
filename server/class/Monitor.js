@@ -56,23 +56,23 @@ class Monitor {
     if (this.stop) this.stop = false;
 
     return new Promise(async (resolve) => {
-      // try {
-      //   await verifyCode(
-      //     await this.alchemy.config.getProvider(),
-      //     this.dodoEgg.newTokenAddress,
-      //     this.dodoEgg.pairAddress
-      //   );
-      // } catch (error) {
-      //   console.log(
-      //     "***  ERROR | There was an error verifying token and pair deployment  ***\n"
-      //   );
-      //   resolve({ liquidAdded: false });
-      // }
+      try {
+        await verifyCode(
+          await this.alchemy.config.getProvider(),
+          this.dodoEgg.newTokenAddress,
+          this.dodoEgg.pairAddress
+        );
+      } catch (error) {
+        console.log(
+          "***  ERROR | There was an error verifying token and pair deployment  ***\n"
+        );
+        resolve({ liquidAdded: false });
+      }
 
       // Checks to ensure liquidity is added
       try {
         while (this.stop === false) {
-          // Create a balance of filter with alchemy-sdk
+          // Create a balanceOf filter with alchemy-sdk
           const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
             this.dodoEgg.pairAddress,
           ]);
@@ -91,13 +91,14 @@ class Monitor {
             resolve({ liquidAdded: true });
             this.stop = true;
           } else {
+            console.log("Liquidity not added yet still waiting...");
             await new Promise((resolve) => setTimeout(resolve, 2500));
             count++;
           }
 
           // Allows for a 1 minute and 15 second window to look for liquidity
           // before moving on
-          if (count === 30) {
+          if (count == 30) {
             console.log("Liquidity was not added.");
             resolve({ liquidAdded: false });
             this.stop = true;
@@ -108,6 +109,8 @@ class Monitor {
           "ERROR | There was an error calling balanceOf on pair: ",
           this.dodoEgg.pairAddress
         );
+        console.log("");
+
         resolve({ liquidAdded: false });
       }
     });
