@@ -8,9 +8,42 @@ class DodoEgg {
    * This constucter is used initially to create a new DodoEgg
    * @param {object} data JSON data of a DodoEgg
    */
-  constructor(data) {
+
+  constructor(
+    id,
+    chainId,
+    newTokenAddress,
+    baseTokenAddress,
+    pairAddress,
+    v3,
+    fee,
+    auditResults,
+    intialPrice,
+    targetPrice,
+    tradeInProgress,
+    baseTokenDecimal,
+    newTokenDecimal,
+    baseAssetReserve,
+    liquidityListener,
+    targetListener
+  ) {
     // Instance variables
-    this.data = data;
+    this.id = id;
+    this.chainId = chainId;
+    this.newTokenAddress = newTokenAddress;
+    this.baseTokenAddress = baseTokenAddress;
+    this.pairAddress = pairAddress;
+    this.v3 = v3;
+    this.fee = fee;
+    this.auditResults = auditResults;
+    this.intialPrice = intialPrice;
+    this.targetPrice = targetPrice;
+    this.tradeInProgress = tradeInProgress;
+    this.baseTokenDecimal = baseTokenDecimal;
+    this.newTokenDecimal = newTokenDecimal;
+    this.baseAssetReserve = baseAssetReserve;
+    this.liquidityListener = liquidityListener;
+    this.targetListener = targetListener;
 
     this.dodoEggMonitor = null;
     this.monitorBattery = null;
@@ -25,7 +58,7 @@ class DodoEgg {
    * getPrice, getTargetPrice, start/stop listeners
    */
   plugInMonitor() {
-    if (this.data.v3) {
+    if (this.v3) {
       this.dodoEggMonitor = new DodoEggMonitorV3(this);
     } else {
       this.dodoEggMonitor = new DodoEggMonitorV2(this);
@@ -40,7 +73,7 @@ class DodoEgg {
     this.monitorBattery = setTimeout(() => {
       console.log("**  Battery will be replaced in 15 minutes!  **");
       this.plugInMonitor();
-      if (this.data.tradeInProgress == true) {
+      if (this.tradeInProgress == true) {
         this.dodoEggMonitor.restartTargetListener();
       }
     }, this.batteryLife);
@@ -84,10 +117,7 @@ class DodoEgg {
     try {
       console.log("AuditResults");
 
-      const auditResults = await audit(
-        this.data.chainId,
-        this.data.newTokenAddress
-      );
+      const auditResults = await audit(this.chainId, this.newTokenAddress);
 
       console.log("AuditResults Finsihed");
 
@@ -95,7 +125,7 @@ class DodoEgg {
       if (!auditResults.isSafe) {
         console.log(
           "******    Audit Results: Fail   ******\n",
-          this.data.pairAddress
+          this.pairAddress
         );
         console.log("");
 
@@ -103,14 +133,11 @@ class DodoEgg {
       }
 
       // If the audit passes, return true
-      console.log(
-        "******    Audit Results: Pass   ******\n",
-        this.data.pairAddress
-      );
+      console.log("******    Audit Results: Pass   ******\n", this.pairAddress);
       console.log("");
 
       // Update the audit results
-      this.data.auditResults = auditResults.fields;
+      this.auditResults = auditResults.fields;
 
       // Return true
       return true;
@@ -129,12 +156,12 @@ class DodoEgg {
   async setTargetPrice() {
     // Get the current price and update the instance variable
     const currentPrice = await this.dodoEggMonitor.getPrice();
-    this.data.intialPrice = currentPrice;
+    this.intialPrice = currentPrice;
 
     // Set the target price by increasing the current price 25%
-    this.data.targetPrice = increaseByPercentage(currentPrice, 25);
+    this.targetPrice = increaseByPercentage(currentPrice, 25);
 
-    return this.data.targetPrice;
+    return this.targetPrice;
   }
 
   /**
@@ -149,7 +176,7 @@ class DodoEgg {
   async incubator() {
     // TODO: SWAP FOR THE NEW TOKEN
 
-    console.log("** Target Price  **\n", this.data.targetPrice);
+    console.log("** Target Price  **\n", this.targetPrice);
     console.log("");
 
     // Todo activate listenr
@@ -166,23 +193,21 @@ class DodoEgg {
    */
   getInfo() {
     return {
-      id: this.data.id,
-      chainId: this.data.chainId,
-      newToken: this.data.newTokenAddress,
-      baseToken: this.data.baseTokenAddress,
-      pairAddress: this.data.pairAddress,
-      v3: this.data.v3,
-      auditResults: this.data.auditResults,
-      intialPrice:
-        this.data.intialPrice == null ? "0" : this.data.intialPrice.toString(),
-      targetPrice:
-        this.data.targetPrice == null ? "0" : this.data.targetPrice.toString(),
-      tradeInProgress: this.data.tradeInProgress,
-      baseTokenDecimal: this.data.baseTokenDecimal,
-      newTokenDecimal: this.data.newTokenDecimal,
-      baseAssetReserve: this.data.baseAssetReserve,
-      liquidityListener: this.data.liquidityListener,
-      targetListener: this.data.targetListener,
+      id: this.id,
+      chainId: this.chainId,
+      newToken: this.newTokenAddress,
+      baseToken: this.baseTokenAddress,
+      pairAddress: this.pairAddress,
+      v3: this.v3,
+      auditResults: this.auditResults,
+      intialPrice: this.intialPrice == null ? "0" : this.intialPrice.toString(),
+      targetPrice: this.targetPrice == null ? "0" : this.targetPrice.toString(),
+      tradeInProgress: this.tradeInProgress,
+      baseTokenDecimal: this.baseTokenDecimal,
+      newTokenDecimal: this.newTokenDecimal,
+      baseAssetReserve: this.baseAssetReserve,
+      liquidityListener: this.liquidityListener,
+      targetListener: this.targetListener,
     };
   }
 }

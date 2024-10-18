@@ -24,7 +24,7 @@ class Monitor {
     this.stop = false;
 
     // Initialize providers
-    this.alchemy = new Alchemy(getAlchemySettings(this.dodoEgg.data.chainId));
+    this.alchemy = new Alchemy(getAlchemySettings(this.dodoEgg.chainId));
   }
 
   /**
@@ -55,31 +55,33 @@ class Monitor {
     // Set the stop false so it can loop through
     if (this.stop) this.stop = false;
 
-    try {
-      await verifyCode(
-        await this.alchemy.config.getProvider(),
-        this.dodoEgg.data.newTokenAddress,
-        this.dodoEgg.data.pairAddress
-      );
-    } catch (error) {
-      console.log(
-        "***  ERROR | There was an error verifying token and pair deployment  ***\n"
-      );
-      return false;
-    }
+    console.log("Liquidity Listener");
+
+    // try {
+    //   await verifyCode(
+    //     await this.alchemy.config.getProvider(),
+    //     this.dodoEgg.newTokenAddress,
+    //     this.dodoEgg.pairAddress
+    //   );
+    // } catch (error) {
+    //   console.log(
+    //     "***  ERROR | There was an error verifying token and pair deployment  ***\n"
+    //   );
+    //   return false;
+    // }
 
     // Checks to ensure liquidity is added
     try {
       while (this.stop === false) {
         // Create a balanceOf filter with alchemy-sdk
         const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
-          this.dodoEgg.data.pairAddress,
+          this.dodoEgg.pairAddress,
         ]);
 
         // Call for the balance
         const balance = BigInt(
           await this.alchemy.core.call({
-            to: this.dodoEgg.data.baseTokenAddress,
+            to: this.dodoEgg.baseTokenAddress,
             data: filter,
           })
         );
@@ -110,7 +112,7 @@ class Monitor {
     } catch (error) {
       console.log(
         "ERROR | There was an error calling balanceOf on pair: ",
-        this.dodoEgg.data.pairAddress
+        this.dodoEgg.pairAddress
       );
       console.log("");
 
@@ -127,8 +129,8 @@ class Monitor {
 
   restartTargetListener() {
     this.alchemy.ws.on(
-      this.dodoEgg.data.targetListener.filter,
-      this.dodoEgg.data.targetListener.listener
+      this.dodoEgg.targetListener.filter,
+      this.dodoEgg.targetListener.listener
     );
   }
 
@@ -137,8 +139,8 @@ class Monitor {
    */
   stopTargetListener() {
     this.alchemy.ws.off(
-      this.dodoEgg.data.targetListener.filter,
-      this.dodoEgg.data.targetListener.listener
+      this.dodoEgg.targetListener.filter,
+      this.dodoEgg.targetListener.listener
     );
   }
 }

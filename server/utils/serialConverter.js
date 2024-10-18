@@ -12,27 +12,43 @@ const deserealizeDodo = (data) => {
   const parsedData = JSON.parse(dataToString);
 
   // Create a new DodoEgg paramsobject
-  const params = {
-    id: parsedData.id ?? uuidv4(),
-    chainId: parsedData.chainId,
-    newTokenAddress: parsedData.newToken,
-    baseTokenAddress: parsedData.baseToken,
-    pairAddress: parsedData.pairAddress,
-    v3: parsedData.v3,
-    fee: parsedData.fee ?? null,
-    auditResults: parsedData.auditResults ?? null,
-    intialPrice: parsedData.intialPrice ?? null,
-    targetPrice: parsedData.targetPrice ?? null,
-    tradeInProgress: parsedData.tradeInProgress ?? null,
-    baseTokenDecimal: parsedData.baseTokenDecimal ?? null,
-    newTokenDecimal: parsedData.newTokenDecimal ?? null,
-    baseAssetReserve: parsedData.baseAssetReserve ?? null,
-    liquidityListener: parsedData.liquidityListener ?? null,
-    targetListener: parsedData.targetListener ?? null,
-  };
+
+  const id = parsedData.id ?? uuidv4();
+  const chainId = parsedData.chainId;
+  const newTokenAddress = parsedData.newToken;
+  const baseTokenAddress = parsedData.baseToken;
+  const pairAddress = parsedData.pairAddress;
+  const v3 = parsedData.v3;
+  const fee = parsedData.fee ?? null;
+  const auditResults = parsedData.auditResults ?? null;
+  const intialPrice = parsedData.intialPrice ?? null;
+  const targetPrice = parsedData.targetPrice ?? null;
+  const tradeInProgress = parsedData.tradeInProgress ?? null;
+  const baseTokenDecimal = parsedData.baseTokenDecimal ?? null;
+  const newTokenDecimal = parsedData.newTokenDecimal ?? null;
+  const baseAssetReserve = parsedData.baseAssetReserve ?? null;
+  const liquidityListener = parsedData.liquidityListener ?? null;
+  const targetListener = parsedData.targetListener ?? null;
 
   // Create a new DodoEgg object
-  const dodoEgg = new DodoEgg(params);
+  const dodoEgg = new DodoEgg(
+    id,
+    chainId,
+    newTokenAddress,
+    baseTokenAddress,
+    pairAddress,
+    v3,
+    fee,
+    auditResults,
+    intialPrice,
+    targetPrice,
+    tradeInProgress,
+    baseTokenDecimal,
+    newTokenDecimal,
+    baseAssetReserve,
+    liquidityListener,
+    targetListener
+  );
 
   // Return the dodoEgg
   return dodoEgg;

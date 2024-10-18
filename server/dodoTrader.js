@@ -16,11 +16,9 @@ wss.on("connection", (ws) => {
     // Convert the data into a DodoEgg object
     const dodoEgg = deserealizeDodo(data);
 
-    console.log("DodoTrader: ", dodoEgg.data);
-
     // Add a new pair to the Map if it hasn't already been added
-    if (!dodosTrading.has(dodoEgg.data.id)) {
-      dodosTrading.set(dodoEgg.data.id, dodoEgg);
+    if (!dodosTrading.has(dodoEgg.id)) {
+      dodosTrading.set(dodoEgg.id, dodoEgg);
     }
 
     // Set a target price

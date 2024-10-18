@@ -21,7 +21,7 @@ class DodoEggMonitorV2 extends Monitor {
       console.log("GEtting price");
 
       const pairContract = new ethers.Contract(
-        this.dodoEgg.data.pairAddress,
+        this.dodoEgg.pairAddress,
         IUniswapV2PairABI,
         await this.alchemy.config.getProvider()
       );
@@ -35,37 +35,36 @@ class DodoEggMonitorV2 extends Monitor {
       console.log("Token 0: ", token0);
 
       // Get token decimals
-      this.dodoEgg.data.baseTokenDecimal = await this.getTokenDecimals(
-        this.dodoEgg.data.baseTokenAddress
+      this.dodoEgg.baseTokenDecimal = await this.getTokenDecimals(
+        this.dodoEgg.baseTokenAddress
       );
-      this.dodoEgg.data.newTokenDecimal = await this.getTokenDecimals(
-        this.dodoEgg.data.newTokenAddress
+      this.dodoEgg.newTokenDecimal = await this.getTokenDecimals(
+        this.dodoEgg.newTokenAddress
       );
 
       // Adjust the big number to
       const reserve0Adjusted = ethers.parseUnits(
         reserve0.toString(),
-        18 - Number(this.dodoEgg.data.baseTokenDecimal)
+        18 - Number(this.dodoEgg.baseTokenDecimal)
       );
       const reserve1Adjusted = ethers.parseUnits(
         reserve1.toString(),
-        18 - Number(this.dodoEgg.data.newTokenDecimal)
+        18 - Number(this.dodoEgg.newTokenDecimal)
       );
 
       if (
-        this.dodoEgg.data.baseTokenAddress.toLowerCase() ===
-        token0.toLowerCase()
+        this.dodoEgg.baseTokenAddress.toLowerCase() === token0.toLowerCase()
       ) {
         const price =
           (reserve0Adjusted * ethers.WeiPerEther) / reserve1Adjusted;
 
-        this.dodoEgg.data.baseAssetReserve = 0;
+        this.dodoEgg.baseAssetReserve = 0;
 
         return price;
       } else {
         const price =
           (reserve1Adjusted * ethers.WeiPerEther) / reserve0Adjusted;
-        this.dodoEgg.data.baseAssetReserve = 1;
+        this.dodoEgg.baseAssetReserve = 1;
         return price;
       }
     } catch (error) {
@@ -80,7 +79,7 @@ class DodoEggMonitorV2 extends Monitor {
   async targetListener() {
     // Filter for a sync event
     const filter = {
-      address: this.dodoEgg.data.pairAddress,
+      address: this.dodoEgg.pairAddress,
       topics: [IUNISWAPV2PAIR_INTERFACE.getEvent("Sync").topicHash],
     };
 
@@ -94,7 +93,7 @@ class DodoEggMonitorV2 extends Monitor {
     // Listen to sync events
     this.alchemy.ws.on(filter, listener);
 
-    this.dodoEgg.data.targetListener = { filter: filter, listener: listener };
+    this.dodoEgg.targetListener = { filter: filter, listener: listener };
   }
 
   /**
@@ -111,15 +110,15 @@ class DodoEggMonitorV2 extends Monitor {
     // Uniform the price to the decimal of the given token
     const reserve0Adjusted = ethers.parseUnits(
       reserve0.toString(),
-      18 - Number(this.dodoEgg.data.baseTokenDecimal)
+      18 - Number(this.dodoEgg.baseTokenDecimal)
     );
 
     const reserve1Adjusted = ethers.parseUnits(
       reserve1.toString(),
-      18 - Number(this.dodoEgg.data.newTokenDecimal)
+      18 - Number(this.dodoEgg.newTokenDecimal)
     );
 
-    if (this.dodoEgg.data.baseAssetReserve == 0) {
+    if (this.dodoEgg.baseAssetReserve == 0) {
       reserve = reserve0;
       currentPrice = (reserve0Adjusted * ethers.WeiPerEther) / reserve1Adjusted;
     } else {
@@ -129,15 +128,15 @@ class DodoEggMonitorV2 extends Monitor {
 
     const zero = ethers.parseUnits(
       "0.001",
-      Number(this.dodoEgg.data.baseTokenDecimal)
+      Number(this.dodoEgg.baseTokenDecimal)
     );
 
     // Signal that rug pull took place
     if (reserve < zero) {
       console.log(
-        `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.data.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.data.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
+        `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
       );
-      this.dodoEgg.data.tradeInProgress = false;
+      this.dodoEgg.tradeInProgress = false;
       this.stopTargetListener();
       // TODO: Send pair to DodoDetective
       //  ( Not yet implemented but will conduct audit on tokens
@@ -146,9 +145,9 @@ class DodoEggMonitorV2 extends Monitor {
     }
 
     // If the currentPrice is over the targetPrice stop the listener.
-    if (currentPrice > this.dodoEgg.data.targetPrice) {
+    if (currentPrice > this.dodoEgg.targetPrice) {
       // TODO: Sell tokens for profit
-      this.dodoEgg.data.tradeInProgress = false;
+      this.dodoEgg.tradeInProgress = false;
       this.stopTargetListener();
       console.log(
         `
@@ -157,8 +156,8 @@ class DodoEggMonitorV2 extends Monitor {
 **********                                                          
 **********            Listener has been deactivated V2!!!        
 **********    TIME TO SELL ${currentPrice}              
-**********    Target Price ${this.dodoEgg.data.targetPrice}         
-**********    Pair Address: ${this.dodoEgg.data.pairAddress}                 
+**********    Target Price ${this.dodoEgg.targetPrice}         
+**********    Pair Address: ${this.dodoEgg.pairAddress}                 
 **********                                                      
 *****************************************************************
 *****************************************************************
@@ -166,13 +165,10 @@ class DodoEggMonitorV2 extends Monitor {
       `
       );
     } else {
-      console.log("**** Pair: ", this.dodoEgg.data.pairAddress);
+      console.log("**** Pair: ", this.dodoEgg.pairAddress);
       console.log("*** Current price: ", currentPrice);
-      console.log("** Target price: ", this.dodoEgg.data.targetPrice);
-      console.log(
-        "* Difference: ",
-        this.dodoEgg.data.targetPrice - currentPrice
-      );
+      console.log("** Target price: ", this.dodoEgg.targetPrice);
+      console.log("* Difference: ", this.dodoEgg.targetPrice - currentPrice);
       console.log("");
     }
   }
