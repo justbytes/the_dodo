@@ -24,7 +24,7 @@ class Monitor {
     this.stop = false;
 
     // Initialize providers
-    this.alchemy = new Alchemy(getAlchemySettings(this.dodoEgg.chainId));
+    this.alchemy = new Alchemy(getAlchemySettings(this.dodoEgg.data.chainId));
   }
 
   /**
@@ -55,65 +55,67 @@ class Monitor {
     // Set the stop false so it can loop through
     if (this.stop) this.stop = false;
 
-    return new Promise(async (resolve) => {
-      try {
-        await verifyCode(
-          await this.alchemy.config.getProvider(),
-          this.dodoEgg.newTokenAddress,
-          this.dodoEgg.pairAddress
+    try {
+      await verifyCode(
+        await this.alchemy.config.getProvider(),
+        this.dodoEgg.data.newTokenAddress,
+        this.dodoEgg.data.pairAddress
+      );
+    } catch (error) {
+      console.log(
+        "***  ERROR | There was an error verifying token and pair deployment  ***\n"
+      );
+      return false;
+    }
+
+    // Checks to ensure liquidity is added
+    try {
+      while (this.stop === false) {
+        // Create a balanceOf filter with alchemy-sdk
+        const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
+          this.dodoEgg.data.pairAddress,
+        ]);
+
+        // Call for the balance
+        const balance = BigInt(
+          await this.alchemy.core.call({
+            to: this.dodoEgg.data.baseTokenAddress,
+            data: filter,
+          })
         );
-      } catch (error) {
-        console.log(
-          "***  ERROR | There was an error verifying token and pair deployment  ***\n"
-        );
-        resolve({ liquidAdded: false });
-      }
 
-      // Checks to ensure liquidity is added
-      try {
-        while (this.stop === false) {
-          // Create a balanceOf filter with alchemy-sdk
-          const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
-            this.dodoEgg.pairAddress,
-          ]);
+        console.log(`Balance: ${balance} Count: ${count}`);
 
-          // Call for the balance
-          const balance = BigInt(
-            await this.alchemy.core.call({
-              to: this.dodoEgg.baseTokenAddress,
-              data: filter,
-            })
-          );
+        // If the balance is greater then 0 resolve else wait 5 seconds and retry
+        if (balance > 0) {
+          console.log("Liquidity added: ", balance);
 
-          // If the balance is greater then 0 resolve else wait 5 seconds and retry
-          if (balance > 0) {
-            console.log("Liquidity added: ", balance);
-            resolve({ liquidAdded: true });
-            this.stop = true;
-          } else {
-            console.log("Liquidity not added yet still waiting...");
-            await new Promise((resolve) => setTimeout(resolve, 2500));
-            count++;
-          }
+          this.stop = true;
 
-          // Allows for a 1 minute and 15 second window to look for liquidity
-          // before moving on
-          if (count == 30) {
-            console.log("Liquidity was not added.");
-            resolve({ liquidAdded: false });
-            this.stop = true;
-          }
+          return true;
+        } else {
+          console.log(`Liquidity not added yet still waiting. Count: ${count}`);
+          await new Promise((resolve) => setTimeout(resolve, 2500));
+          count++;
         }
-      } catch (error) {
-        console.log(
-          "ERROR | There was an error calling balanceOf on pair: ",
-          this.dodoEgg.pairAddress
-        );
-        console.log("");
 
-        resolve({ liquidAdded: false });
+        // Allows for a 1 minute and 15 second window to look for liquidity
+        // before moving on
+        if (count == 30) {
+          console.log("Liquidity was not added.");
+          this.stop = true;
+          return false;
+        }
       }
-    });
+    } catch (error) {
+      console.log(
+        "ERROR | There was an error calling balanceOf on pair: ",
+        this.dodoEgg.data.pairAddress
+      );
+      console.log("");
+
+      return false;
+    }
   }
 
   /**
@@ -125,8 +127,8 @@ class Monitor {
 
   restartTargetListener() {
     this.alchemy.ws.on(
-      this.dodoEgg.targetListener.filter,
-      this.dodoEgg.targetListener.listener
+      this.dodoEgg.data.targetListener.filter,
+      this.dodoEgg.data.targetListener.listener
     );
   }
 
@@ -135,8 +137,8 @@ class Monitor {
    */
   stopTargetListener() {
     this.alchemy.ws.off(
-      this.dodoEgg.targetListener.filter,
-      this.dodoEgg.targetListener.listener
+      this.dodoEgg.data.targetListener.filter,
+      this.dodoEgg.data.targetListener.listener
     );
   }
 }

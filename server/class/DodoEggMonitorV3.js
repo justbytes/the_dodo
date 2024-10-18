@@ -23,18 +23,18 @@ class DodoEggMonitorV3 extends Monitor {
   async getPrice() {
     try {
       const poolContract = new ethers.Contract(
-        this.dodoEgg.pairAddress,
+        this.dodoEgg.data.pairAddress,
         IUniswapV3PoolABI,
         await this.alchemy.config.getProvider()
       );
 
       const price = await poolContract.slot0();
-      this.dodoEgg.baseTokenDecimal = await this.getTokenDecimals(
-        this.dodoEgg.baseTokenAddress
+      this.dodoEgg.data.baseTokenDecimal = await this.getTokenDecimals(
+        this.dodoEgg.data.baseTokenAddress
       );
 
-      this.dodoEgg.newTokenDecimal = await this.getTokenDecimals(
-        this.dodoEgg.newTokenAddress
+      this.dodoEgg.data.newTokenDecimal = await this.getTokenDecimals(
+        this.dodoEgg.data.newTokenAddress
       );
 
       return price[0];
@@ -50,7 +50,7 @@ class DodoEggMonitorV3 extends Monitor {
   async targetListener() {
     // Filter for swap events
     const filter = {
-      address: this.dodoEgg.pairAddress,
+      address: this.dodoEgg.data.pairAddress,
       topics: [IUniswapV3PoolInterface.getEvent("Swap").topicHash],
     };
 
@@ -66,7 +66,7 @@ class DodoEggMonitorV3 extends Monitor {
     this.alchemy.ws.on(filter, listener);
 
     // Set the targetListener instance varible
-    this.dodoEgg.targetListener = { filter: filter, listener: listener };
+    this.dodoEgg.data.targetListener = { filter: filter, listener: listener };
   }
 
   /**
@@ -86,28 +86,28 @@ class DodoEggMonitorV3 extends Monitor {
     } = decodedLog.args;
 
     const filter = IUniswapV3PoolInterface.encodeFunctionData("balanceOf", [
-      this.dodoEgg.pairAddress,
+      this.dodoEgg.data.pairAddress,
     ]);
 
     // Call for the balance
     const baseAssetBalance = BigInt(
       await this.alchemy.core.call({
-        to: this.dodoEgg.baseTokenAddress,
+        to: this.dodoEgg.data.baseTokenAddress,
         data: filter,
       })
     );
 
     const zero = ethers.parseUnits(
       "0.001",
-      Number(this.dodoEgg.baseTokenDecimal)
+      Number(this.dodoEgg.data.baseTokenDecimal)
     );
 
     if (baseAssetBalance < zero) {
       // Signal that rug pull took place
       console.log(
-        `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
+        `!!***  RUG PULL DETECTED  ***!!\n *****  Pair Address: ${this.dodoEgg.data.pairAddress}  ******\n *****  Base Token Address: ${this.dodoEgg.data.baseTokenAddress}  ******\n *****  New Token Address: ${this.dodoEgg.newTokenAddress}  ******\n`
       );
-      this.dodoEgg.tradeInProgress = false;
+      this.dodoEgg.data.tradeInProgress = false;
       this.stopTargetListener();
       // TODO: Send pair to DodoDetective
       //  ( Not yet implemented but will conduct audit on tokens
@@ -115,9 +115,9 @@ class DodoEggMonitorV3 extends Monitor {
       //    the addressess assosiated with )
     }
 
-    if (sqrtPriceX96 > this.dodoEgg.targetPrice) {
+    if (sqrtPriceX96 > this.dodoEgg.data.targetPrice) {
       // TODO: Sell tokens for profit
-      this.dodoEgg.tradeInProgress = false;
+      this.dodoEgg.data.tradeInProgress = false;
       this.stopTargetListener();
       console.log(
         `
@@ -126,8 +126,8 @@ class DodoEggMonitorV3 extends Monitor {
 **********                                                          
 **********            Listener has been deactivated V3!!!        
 **********    TIME TO SELL ${sqrtPriceX96}              
-**********    Target Price ${this.dodoEgg.targetPrice}         
-**********    Pair Address: ${this.dodoEgg.pairAddress}                 
+**********    Target Price ${this.dodoEgg.data.targetPrice}         
+**********    Pair Address: ${this.dodoEgg.data.pairAddress}                 
 **********                                                      
 *****************************************************************
 *****************************************************************
@@ -136,10 +136,10 @@ class DodoEggMonitorV3 extends Monitor {
       );
       console.log("");
     } else {
-      console.log("Pair: ", this.dodoEgg.pairAddress);
+      console.log("Pair: ", this.dodoEgg.data.pairAddress);
       console.log("Current price: ", currentPrice);
-      console.log("Target price: ", this.dodoEgg.targetPrice);
-      console.log("Difference: ", currentPrice - this.dodoEgg.targetPrice);
+      console.log("Target price: ", this.dodoEgg.data.targetPrice);
+      console.log("Difference: ", currentPrice - this.dodoEgg.data.targetPrice);
       console.log("");
     }
   }

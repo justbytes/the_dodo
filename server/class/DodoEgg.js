@@ -26,9 +26,9 @@ class DodoEgg {
    */
   plugInMonitor() {
     if (this.data.v3) {
-      this.dodoEggMonitor = new DodoEggMonitorV3(this.data);
+      this.dodoEggMonitor = new DodoEggMonitorV3(this);
     } else {
-      this.dodoEggMonitor = new DodoEggMonitorV2(this.data);
+      this.dodoEggMonitor = new DodoEggMonitorV2(this);
     }
   }
 
@@ -53,14 +53,21 @@ class DodoEgg {
   async conductAudit() {
     //
     // Check for liquidity
+
     try {
+      console.log("Liquidity check!");
+
       const liqudityCheck = await this.dodoEggMonitor.liquidityListener();
+
+      console.log("Liquidity done!", liqudityCheck);
 
       if (liqudityCheck === false) {
         console.log(`Token didn't recieve liquidity`);
         console.log("");
 
         return false;
+      } else {
+        console.log("Liquidity check passed. Conducting audit...");
       }
     } catch (error) {
       console.log(
@@ -75,10 +82,14 @@ class DodoEgg {
 
     // Check for a malicious code
     try {
+      console.log("AuditResults");
+
       const auditResults = await audit(
         this.data.chainId,
         this.data.newTokenAddress
       );
+
+      console.log("AuditResults Finsihed");
 
       // If the audit fails, return false
       if (!auditResults.isSafe) {

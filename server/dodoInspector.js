@@ -26,6 +26,8 @@ wss.on("connection", (ws) => {
     let audit;
     // Conduct a saftey audit
     try {
+      console.log("Conducting Audit!");
+
       audit = await dodoEgg.conductAudit();
     } catch (error) {
       console.error(
