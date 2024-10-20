@@ -85,34 +85,6 @@ class DodoEgg {
    */
   async conductAudit() {
     //
-    // Check for liquidity
-
-    try {
-      console.log("Liquidity check!");
-
-      const liqudityCheck = await this.dodoEggMonitor.liquidityListener();
-
-      console.log("Liquidity done!", liqudityCheck);
-
-      if (liqudityCheck === false) {
-        console.log(`Token didn't recieve liquidity`);
-        console.log("");
-
-        return false;
-      } else {
-        console.log("Liquidity check passed. Conducting audit...");
-      }
-    } catch (error) {
-      console.log(
-        "**  DodoEgg | error when checking for liquidity!  **\n",
-        error
-      );
-      console.log("");
-
-      this.dodoEggMonitor.stopLiquidityListener();
-      return false;
-    }
-
     // Check for a malicious code
     try {
       console.log("AuditResults");
@@ -139,8 +111,7 @@ class DodoEgg {
       // Update the audit results
       this.auditResults = auditResults.fields;
 
-      // Return true
-      return true;
+      // Continue with liquidity check
     } catch (error) {
       // If there was an error during the audit, return false
       console.log("**  DodoEgg | error during the audit!  **\n", error);
@@ -148,6 +119,34 @@ class DodoEgg {
 
       return false;
     }
+
+    // // Check for liquidity
+    // try {
+    //   console.log("Liquidity check!");
+
+    //   const liqudityCheck = await this.dodoEggMonitor.liquidityListener();
+
+    //   console.log("Liquidity done!", liqudityCheck);
+
+    //   if (liqudityCheck) {
+    //     console.log(`Liquidity check passed`);
+    //     console.log("");
+
+    //     return true;
+    //   } else {
+    //     console.log("Liquidity check failed");
+    //     return false;
+    //   }
+    // } catch (error) {
+    //   console.log(
+    //     "**  DodoEgg | error when checking for liquidity!  **\n",
+    //     error
+    //   );
+    //   console.log("");
+
+    //   this.dodoEggMonitor.stopLiquidityListener();
+    //   return false;
+    // }
   }
 
   /**

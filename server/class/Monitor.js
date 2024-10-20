@@ -51,10 +51,6 @@ class Monitor {
    * @returns the balance of the base token in the pair
    */
   async liquidityListener() {
-    let count = 0;
-    // Set the stop false so it can loop through
-    if (this.stop) this.stop = false;
-
     console.log("Liquidity Listener");
 
     // try {
@@ -72,6 +68,7 @@ class Monitor {
 
     // Checks to ensure liquidity is added
     try {
+      let count = 0;
       while (this.stop === false) {
         // Create a balanceOf filter with alchemy-sdk
         const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
@@ -97,16 +94,16 @@ class Monitor {
           return true;
         } else {
           console.log(`Liquidity not added yet still waiting. Count: ${count}`);
-          await new Promise((resolve) => setTimeout(resolve, 2500));
-          count++;
-        }
 
-        // Allows for a 1 minute and 15 second window to look for liquidity
-        // before moving on
-        if (count == 30) {
-          console.log("Liquidity was not added.");
-          this.stop = true;
-          return false;
+          // Allows for a 1 minute and 15 second window to look for liquidity
+          if (count < 30) {
+            await new Promise((resolve) => setTimeout(resolve, 2500));
+            count++;
+          } else {
+            console.log("Liquidity Check Failed.");
+            this.stop = true;
+            return false;
+          }
         }
       }
     } catch (error) {

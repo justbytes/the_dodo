@@ -17,8 +17,9 @@ class DodoEggMonitorV2 extends Monitor {
    * @returns the price in terms of base token
    */
   async getPrice() {
+    let token0;
     try {
-      console.log("GEtting price");
+      console.log("Getting price V2");
 
       const pairContract = new ethers.Contract(
         this.dodoEgg.pairAddress,
@@ -30,9 +31,13 @@ class DodoEggMonitorV2 extends Monitor {
 
       console.log(reserve0, reserve1);
 
-      const token0 = await pairContract.token0();
+      try {
+        token0 = await pairContract.token0();
 
-      console.log("Token 0: ", token0);
+        console.log("Token 0: ", token0);
+      } catch (error) {
+        console.log("Error with getting token0", error);
+      }
 
       // Get token decimals
       this.dodoEgg.baseTokenDecimal = await this.getTokenDecimals(
