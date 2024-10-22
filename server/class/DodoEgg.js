@@ -158,7 +158,11 @@ class DodoEgg {
     this.intialPrice = currentPrice;
 
     // Set the target price by increasing the current price 25%
-    this.targetPrice = increaseByPercentage(currentPrice, 25);
+    const basisPoints = BigInt(25 * 100);
+
+    // Perform the calculation
+    const increase = (currentPrice * basisPoints) / BigInt(10000);
+    const newValue = currentPrice + increase;
 
     return this.targetPrice;
   }
