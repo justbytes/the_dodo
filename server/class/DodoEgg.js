@@ -38,13 +38,14 @@ class DodoEgg {
     this.auditResults = auditResults;
     this.intialPrice = intialPrice;
     this.targetPrice = targetPrice;
-    this.tradeInProgress = tradeInProgress;
+    this.tradeInProgress = tradeInProgress === null ? false : tradeInProgress; // Default to false if not provided
     this.baseTokenDecimal = baseTokenDecimal;
     this.newTokenDecimal = newTokenDecimal;
     this.baseAssetReserve = baseAssetReserve;
     this.liquidityListener = liquidityListener;
     this.targetListener = targetListener;
 
+    this.auditResults = false;
     this.dodoEggMonitor = null;
     this.monitorBattery = null;
 
@@ -155,7 +156,7 @@ class DodoEgg {
   async setTargetPrice() {
     // Get the current price and update the instance variable
     const currentPrice = await this.dodoEggMonitor.getPrice();
-    this.intialPrice = currentPrice;
+    //this.intialPrice = currentPrice;
 
     // Set the target price by increasing the current price 25%
     const basisPoints = BigInt(25 * 100);

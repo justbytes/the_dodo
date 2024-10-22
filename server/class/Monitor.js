@@ -139,6 +139,9 @@ class Monitor {
       this.dodoEgg.targetListener.filter,
       this.dodoEgg.targetListener.listener
     );
+
+    // clean up target listener
+    this.dodoEgg.targetListener = null;
   }
 }
 

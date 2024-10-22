@@ -65,6 +65,7 @@ class DodoEggMonitorV2 extends Monitor {
 
         this.dodoEgg.baseAssetReserve = 0;
 
+        this.dodoEgg.intialPrice = price;
         return price;
       } else {
         const price =
