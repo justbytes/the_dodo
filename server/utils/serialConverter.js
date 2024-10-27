@@ -6,7 +6,7 @@ const DodoEgg = require("../class/DodoEgg");
  * @param {object} data JSON DATA
  * @returns {object} a DodoEgg
  */
-const deserealizeDodo = (data) => {
+const deserializeDodo = (data) => {
   // Convert and parse data
   const dataToString = data.toString();
   const parsedData = JSON.parse(dataToString);
@@ -60,7 +60,7 @@ const deserealizeDodo = (data) => {
  * @param {*} data a DodoEgg.getInfo
  * @returns JSON data of a dodoEgg
  */
-const serealizeDodo = (data) => {
+const serializeDodo = (data) => {
   // Convert data to JSON
 
   const rawDodoData = {
@@ -70,4 +70,4 @@ const serealizeDodo = (data) => {
   return JSON.stringify(rawDodoData);
 };
 
-module.exports = { deserealizeDodo, serealizeDodo };
+module.exports = { deserializeDodo, serializeDodo };

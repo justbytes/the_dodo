@@ -47,7 +47,7 @@ class DodoEggMonitorV3 extends Monitor {
   /**
    * Activates the v3 target listener
    */
-  async targetListener() {
+ targetListener() {
     // Filter for swap events
     const filter = {
       address: this.dodoEgg.pairAddress,

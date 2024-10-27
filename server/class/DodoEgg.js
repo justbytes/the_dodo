@@ -66,6 +66,8 @@ class DodoEgg {
     }
   }
 
+  // this will need to be changed so that when a dodoegg is initialized, it will automatically swap in a new monitor battery
+  // Todo:change name to setupMonitorBattery
   swapMonitorBattery() {
     if (this.monitorBattery) {
       clearTimeout(this.monitorBattery);
@@ -184,7 +186,7 @@ class DodoEgg {
     console.log("");
 
     // Todo activate listenr
-    await this.dodoEggMonitor.targetListener();
+    this.dodoEggMonitor.targetListener();
 
     // Todo perform first swap
     // this.tradeInProgress = true
@@ -203,6 +205,7 @@ class DodoEgg {
       baseToken: this.baseTokenAddress,
       pairAddress: this.pairAddress,
       v3: this.v3,
+      fee: this.fee,
       auditResults: this.auditResults,
       intialPrice: this.intialPrice == null ? "0" : this.intialPrice.toString(),
       targetPrice: this.targetPrice == null ? "0" : this.targetPrice.toString(),

@@ -82,7 +82,7 @@ class DodoEggMonitorV2 extends Monitor {
   /**
    * Activates v2 target listener
    */
-  async targetListener() {
+  targetListener() {
     // Filter for a sync event
     const filter = {
       address: this.dodoEgg.pairAddress,
