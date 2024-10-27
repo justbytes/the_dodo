@@ -163,7 +163,7 @@ class DodoEgg {
 
     // Perform the calculation
     const increase = (currentPrice * basisPoints) / BigInt(10000);
-    const newValue = currentPrice + increase;
+    this.targetPrice = currentPrice + increase;
 
     return this.targetPrice;
   }

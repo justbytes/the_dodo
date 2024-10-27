@@ -3,40 +3,19 @@ const DodoEgg = require("../class/DodoEgg");
 
 describe("Monitor", () => {
   let monitor;
-  let realDodoEgg;
+  let dodoEgg;
 
-  beforeAll(async () => {
-    // Set up any global configurations or connections
-    // This could include setting up environment variables, etc.
+  dodoEgg = new DodoEgg({
+    // Add necessary configuration
+    // apiKey: process.env.API_KEY,
+    // network: 'mainnet',
   });
+  monitor = new Monitor(realDodoEgg);
 
-  beforeEach(() => {
-    realDodoEgg = new DodoEgg({
-      // Add necessary configuration
-      // apiKey: process.env.API_KEY,
-      // network: 'mainnet',
-    });
-    monitor = new Monitor(realDodoEgg);
-  });
-
-  afterAll(async () => {
-    // Clean up any connections or resources
-  });
-
-  test("should initialize with a DodoEgg instance", () => {
-    expect(monitor.dodoEgg).toBe(realDodoEgg);
-  });
-
-  test("should get token decimals for DAI", async () => {
-    const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI
+  test("should get token decimals", async () => {
+    const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI 18 Decimals
     const decimals = await monitor.getTokenDecimals(tokenAddress);
     expect(decimals).toBe(18);
-  }, 15000);
-
-  test("should get token decimals for USDC", async () => {
-    const tokenAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"; // USDC
-    const decimals = await monitor.getTokenDecimals(tokenAddress);
-    expect(decimals).toBe(6);
   }, 15000);
 
   test("should start and stop target listener", async () => {

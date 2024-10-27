@@ -47,94 +47,26 @@ class Monitor {
   }
 
   /**
-   * Every 5 seconds calls balance of on the base token address
-   * @returns the balance of the base token in the pair
+   * Restarts the target listener
    */
-  async liquidityListener() {
-    console.log("Liquidity Listener");
-
-    // try {
-    //   await verifyCode(
-    //     await this.alchemy.config.getProvider(),
-    //     this.dodoEgg.newTokenAddress,
-    //     this.dodoEgg.pairAddress
-    //   );
-    // } catch (error) {
-    //   console.log(
-    //     "***  ERROR | There was an error verifying token and pair deployment  ***\n"
-    //   );
-    //   return false;
-    // }
-
-    // Checks to ensure liquidity is added
+  restartTargetListener() {
     try {
-      let count = 0;
-      while (this.stop === false) {
-        // Create a balanceOf filter with alchemy-sdk
-        const filter = ERC20_INTERFACE.encodeFunctionData("balanceOf", [
-          this.dodoEgg.pairAddress,
-        ]);
-
-        // Call for the balance
-        const balance = BigInt(
-          await this.alchemy.core.call({
-            to: this.dodoEgg.baseTokenAddress,
-            data: filter,
-          })
-        );
-
-        console.log(`Balance: ${balance} Count: ${count}`);
-
-        // If the balance is greater then 0 resolve else wait 5 seconds and retry
-        if (balance > 0) {
-          console.log("Liquidity added: ", balance);
-
-          this.stop = true;
-
-          return true;
-        } else {
-          console.log(`Liquidity not added yet still waiting. Count: ${count}`);
-
-          // Allows for a 1 minute and 15 second window to look for liquidity
-          if (count < 30) {
-            await new Promise((resolve) => setTimeout(resolve, 2500));
-            count++;
-          } else {
-            console.log("Liquidity Check Failed.");
-            this.stop = true;
-            return false;
-          }
-        }
-      }
+      this.alchemy.ws.on(
+        this.dodoEgg.targetListener.filter,
+        this.dodoEgg.targetListener.listener
+      );
     } catch (error) {
       console.log(
-        "ERROR | There was an error calling balanceOf on pair: ",
-        this.dodoEgg.pairAddress
+        "There was an error restarting the target listener! \n",
+        error
       );
-      console.log("");
-
-      return false;
     }
   }
 
   /**
-   * Stops liquidity listener
+   * Removes a target listener event filter
    */
-  stopLiquidityListener() {
-    this.stop = true;
-  }
-
-  restartTargetListener() {
-    this.alchemy.ws.on(
-      this.dodoEgg.targetListener.filter,
-      this.dodoEgg.targetListener.listener
-    );
-  }
-
-  /**
-   * Removes a "Sync" event filter
-   */
-  stopTargetListener() {
+  removeTargetListener() {
     this.alchemy.ws.off(
       this.dodoEgg.targetListener.filter,
       this.dodoEgg.targetListener.listener
