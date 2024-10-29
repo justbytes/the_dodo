@@ -1,51 +1,87 @@
-const Monitor = require("../class/Monitor");
 const DodoEgg = require("../class/DodoEgg");
+const V2Monitor = require("../class/DodoEggMonitorV2");
 
 describe("Monitor", () => {
-  let monitor;
   let dodoEgg;
 
-  dodoEgg = new DodoEgg({
-    // Add necessary configuration
-    // apiKey: process.env.API_KEY,
-    // network: 'mainnet',
+  // V2 DodoEgg Setup
+  const configV2 = {
+    id: uuidv4(),
+    chainId: "1",
+    newTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+    baseTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    pairAddress: "0x1234567890123456789012345678901234567890",
+    v3: false,
+    fee: null,
+    auditResults: null,
+    intialPrice: null,
+    targetPrice: null,
+    tradeInProgress: null,
+    baseTokenDecimal: null,
+    newTokenDecimal: null,
+    baseAssetReserve: null,
+    liquidityListener: null,
+    targetListener: null,
+  };
+
+  // Serialize and deserialize the DodoEgg
+  serializedDodo = serializeDodo(ethConfigV2);
+
+  // Create a new DodoEgg instance from the serialized data
+  dodoEgg = deserializeDodo(serializedDodo);
+
+  describe("V2 Monitor", () => {
+    test("should get token decimals", async () => {
+      const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI 18 Decimals
+      const decimals = await dodoEgg.monitor.getTokenDecimals(tokenAddress);
+      expect(decimals).toBe("18");
+    });
+
+    test("should get price", async () => {
+      const price = await dodoEgg.monitor.getPrice();
+      expect(typeof price).toBe("bigint");
+      expect(dodoEgg.intialPrice).toBe(price);
+      expect(dodoEgg.baseTokenDecimal).toBe("18");
+      expect(dodoEgg.newTokenDecimal).toBe("18");
+      expect(dodoEgg.baseAssetReserve).not.toBeNull();
+    });
+
+    test("should start a target listener", async () => {
+      dodoEgg.monitor.startTargetListener();
+      expect(dodoEgg.targetListener).not.toBeNull();
+    });
   });
-  monitor = new Monitor(realDodoEgg);
 
-  test("should get token decimals", async () => {
-    const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI 18 Decimals
-    const decimals = await monitor.getTokenDecimals(tokenAddress);
-    expect(decimals).toBe(18);
-  }, 15000);
+  // V3 DodoEgg Setup
+  const configV3 = {
+    id: uuidv4(),
+    chainId: "1",
+    newTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+    baseTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    pairAddress: "0x1234567890123456789012345678901234567890",
+    v3: false,
+    fee: null,
+    auditResults: null,
+    intialPrice: null,
+    targetPrice: null,
+    tradeInProgress: null,
+    baseTokenDecimal: null,
+    newTokenDecimal: null,
+    baseAssetReserve: null,
+    liquidityListener: null,
+    targetListener: null,
+  };
 
-  test("should start and stop target listener", async () => {
-    const mockCallback = jest.fn();
-    await monitor.startTargetListener(mockCallback);
-    expect(monitor.dodoEgg.targetListener).not.toBeNull();
+  // Serialize and deserialize the DodoEgg
+  serializedDodo = serializeDodo(ethConfigV2);
 
-    monitor.stopTargetListener();
-    expect(monitor.dodoEgg.targetListener).toBeNull();
-  }, 20000);
+  // Create a new DodoEgg instance from the serialized data
+  dodoEgg = deserializeDodo(serializedDodo);
 
-  test("should fetch latest block number", async () => {
-    const blockNumber = await monitor.getLatestBlockNumber();
-    expect(typeof blockNumber).toBe("number");
-    expect(blockNumber).toBeGreaterThan(0);
-  }, 15000);
-
-  test("should fetch token balance", async () => {
-    const address = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e"; // Example address
-    const tokenAddress = "0x6B175474E89094C44Da98b954EedeAC495271d0F"; // DAI
-    const balance = await monitor.getTokenBalance(address, tokenAddress);
-    expect(typeof balance).toBe("bigint");
-  }, 15000);
-
-  test("should handle non-existent token address", async () => {
-    const nonExistentAddress = "0x1234567890123456789012345678901234567890";
-    await expect(
-      monitor.getTokenDecimals(nonExistentAddress)
-    ).rejects.toThrow();
-  }, 15000);
-
-  // Add more integration tests as needed
+  describe("V3 Monitor", () => {
+    test("should get price", async () => {
+      const price = await dodoEgg.monitor.getPrice();
+      expect(typeof price).toBe("bigint");
+    });
+  });
 });
