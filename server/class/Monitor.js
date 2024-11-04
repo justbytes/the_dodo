@@ -46,6 +46,23 @@ class Monitor {
     }
   }
 
+  getTargetListeners() {
+    return this.alchemy.ws.listenerCount(this.dodoEgg.targetListener.filters);
+  }
+
+  /**
+   * Removes a target listener event filter
+   */
+  removeTargetListener() {
+    this.alchemy.ws.off(
+      this.dodoEgg.targetListener.filter,
+      this.dodoEgg.targetListener.listener
+    );
+
+    // clean up target listener
+    this.dodoEgg.targetListener = null;
+  }
+
   /**
    * Restarts the target listener
    */
@@ -61,19 +78,6 @@ class Monitor {
         error
       );
     }
-  }
-
-  /**
-   * Removes a target listener event filter
-   */
-  removeTargetListener() {
-    this.alchemy.ws.off(
-      this.dodoEgg.targetListener.filter,
-      this.dodoEgg.targetListener.listener
-    );
-
-    // clean up target listener
-    this.dodoEgg.targetListener = null;
   }
 }
 

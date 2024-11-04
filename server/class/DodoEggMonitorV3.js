@@ -47,7 +47,7 @@ class DodoEggMonitorV3 extends Monitor {
   /**
    * Activates the v3 target listener
    */
- targetListener() {
+  targetListener() {
     // Filter for swap events
     const filter = {
       address: this.dodoEgg.pairAddress,
@@ -115,7 +115,7 @@ class DodoEggMonitorV3 extends Monitor {
       //    the addressess assosiated with )
     }
 
-    if (sqrtPriceX96 > this.dodoEgg.data.targetPrice) {
+    if (sqrtPriceX96 > this.dodoEgg.targetPrice) {
       // TODO: Sell tokens for profit
       this.dodoEgg.tradeInProgress = false;
       this.stopTargetListener();
