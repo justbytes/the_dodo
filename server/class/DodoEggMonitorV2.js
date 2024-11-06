@@ -17,10 +17,8 @@ class DodoEggMonitorV2 extends Monitor {
    * @returns the price in terms of base token
    */
   async getPrice() {
-    let token0;
+    let token0, token1;
     try {
-      console.log("Getting price V2");
-
       const pairContract = new ethers.Contract(
         this.dodoEgg.pairAddress,
         IUniswapV2PairABI,
@@ -29,23 +27,23 @@ class DodoEggMonitorV2 extends Monitor {
 
       const [reserve0, reserve1] = await pairContract.getReserves();
 
-      console.log(reserve0, reserve1);
-
       try {
         token0 = await pairContract.token0();
-
-        console.log("Token 0: ", token0);
+        token1 = await pairContract.token1();
       } catch (error) {
         console.log("Error with getting token0", error);
       }
 
-      // Get token decimals
-      this.dodoEgg.baseTokenDecimal = await this.getTokenDecimals(
+      // Get and set base token decimals
+      const baseDecimal = await this.getTokenDecimals(
         this.dodoEgg.baseTokenAddress
-      );
-      this.dodoEgg.newTokenDecimal = await this.getTokenDecimals(
+      )
+      this.dodoEgg.setBaseTokenDecimals(baseDecimal);
+      // Get and set new token decimals
+      const newDecimal = await this.getTokenDecimals(
         this.dodoEgg.newTokenAddress
-      );
+      )
+      this.dodoEgg.setNewTokenDecimals(newDecimal);
 
       // Adjust the big number to
       const reserve0Adjusted = ethers.parseUnits(
@@ -56,6 +54,7 @@ class DodoEggMonitorV2 extends Monitor {
         reserve1.toString(),
         18 - Number(this.dodoEgg.newTokenDecimal)
       );
+      
 
       if (
         this.dodoEgg.baseTokenAddress.toLowerCase() === token0.toLowerCase()
@@ -63,14 +62,16 @@ class DodoEggMonitorV2 extends Monitor {
         const price =
           (reserve0Adjusted * ethers.WeiPerEther) / reserve1Adjusted;
 
-        this.dodoEgg.baseAssetReserve = 0;
+        this.dodoEgg.setBaseAssetReserve(0);
 
-        this.dodoEgg.intialPrice = price;
+        this.dodoEgg.setIntialPrice(price);
+        
         return price;
       } else {
         const price =
           (reserve1Adjusted * ethers.WeiPerEther) / reserve0Adjusted;
-        this.dodoEgg.baseAssetReserve = 1;
+        this.dodoEgg.setBaseAssetReserve(1);
+        this.dodoEgg.setIntialPrice(price);
         return price;
       }
     } catch (error) {

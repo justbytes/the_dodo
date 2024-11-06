@@ -2,6 +2,7 @@ const DodoEggMonitorV2 = require("./DodoEggMonitorV2");
 const DodoEggMonitorV3 = require("./DodoEggMonitorV3");
 const audit = require("../logic/audit");
 const increaseByPercentage = require("./utils/increaseByPercentage");
+const { bigint } = require("hardhat/internal/core/params/argumentTypes");
 
 class DodoEgg {
   /**
@@ -80,6 +81,34 @@ class DodoEgg {
         this.dodoEggMonitor.restartTargetListener();
       }
     }, this.batteryLife);
+  }
+
+  async setBaseAssetReserve(reserve) {
+    this.baseAssetReserve = reserve;
+  }
+  async getBaseAssetReserve() {
+    return this.baseAssetReserve;
+  }
+
+  async setBaseTokenDecimals(decimals) {
+    this.baseTokenDecimal = decimals;
+  }
+  async getBaseTokenDecimals() {
+    return this.baseTokenDecimal;
+  }
+
+  async setNewTokenDecimals(decimals) {
+    this.newTokenDecimal = decimals;
+  }
+  async getNewTokenDecimals() {
+    return this.newTokenDecimal;
+  }
+
+  async setIntialPrice(price) {
+    this.intialPrice = price;
+  }
+  async getInitialPrice() {
+    return this.intialPrice;
   }
 
   /**

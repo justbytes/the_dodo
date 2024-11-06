@@ -1,15 +1,12 @@
 const { ethers, AlchemyProvider, Interface } = require("ethers");
 const { Alchemy } = require("alchemy-sdk");
 const getAlchemySettings = require("../utils/getAlchemySettings");
-const verifyCode = require("./utils/verifyDeployment");
 
 // ABI's for smart contracts
 
 const {
   abi: ERC20_ABI,
 } = require("@openzeppelin/contracts/build/contracts/ERC20.json");
-
-const ERC20_INTERFACE = new ethers.Interface(ERC20_ABI);
 
 /**
  * Base class for the v2 and v3 egg monitorsreturn;
@@ -33,6 +30,7 @@ class Monitor {
    * @returns decimal of a token
    */
   async getTokenDecimals(tokenAddress) {
+
     try {
       const tokenContract = new ethers.Contract(
         tokenAddress,
@@ -41,9 +39,11 @@ class Monitor {
       );
 
       return await tokenContract.decimals();
+      
     } catch (error) {
-      console.error("There was an error gettting token decimals! \n", error);
+      console.error("There was a problem getting decimals! \n", error);
     }
+    
   }
 
   getTargetListeners() {

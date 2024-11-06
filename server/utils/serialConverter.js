@@ -11,12 +11,12 @@ const deserializeDodo = (data) => {
   const dataToString = data.toString();
   const parsedData = JSON.parse(dataToString);
 
-  // Create a new DodoEgg paramsobject
-
+  // Create a new DodoEgg params object
+  
   const id = parsedData.id ?? uuidv4();
   const chainId = parsedData.chainId;
-  const newTokenAddress = parsedData.newToken;
-  const baseTokenAddress = parsedData.baseToken;
+  const newTokenAddress = parsedData.newTokenAddress;
+  const baseTokenAddress = parsedData.baseTokenAddress;
   const pairAddress = parsedData.pairAddress;
   const v3 = parsedData.v3;
   const fee = parsedData.fee ?? null;
@@ -31,7 +31,7 @@ const deserializeDodo = (data) => {
   const targetListener = parsedData.targetListener ?? null;
 
   // Create a new DodoEgg object
-  const dodoEgg = new DodoEgg(
+  return new DodoEgg(
     id,
     chainId,
     newTokenAddress,
@@ -51,7 +51,7 @@ const deserializeDodo = (data) => {
   );
 
   // Return the dodoEgg
-  return dodoEgg;
+  
 };
 
 /**

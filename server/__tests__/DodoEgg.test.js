@@ -13,12 +13,13 @@ describe("ETH DodoEgg", () => {
 
 
   // V2 DodoEgg Setup
+  // eth/pepe
   const ethConfigV2 = {
     id: uuidv4(),
     chainId: "1",
-    newTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-    baseTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    pairAddress: "0x1234567890123456789012345678901234567890",
+    newTokenAddress: "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+    baseTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    pairAddress: "0xA43fe16908251ee70EF74718545e4FE6C5cCEc9f",
     v3: false,
     fee: null,
     auditResults: null,
@@ -105,14 +106,15 @@ describe("ETH DodoEgg", () => {
   });
 
   // V3 DodoEgg Setup
+  // eth/wbtc
   const ethConfigV3 = {
     id: uuidv4(),
     chainId: "1",
-    newTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-    baseTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    pairAddress: "0x1234567890123456789012345678901234567890",
+    newTokenAddress: "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599",
+    baseTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    pairAddress: "0xCBCdF9626bC03E24f779434178A73a0B4bad62eD",
     v3: true,
-    fee: null, // TODO: add fee
+    fee: "3000", 
     auditResults: null,
     intialPrice: null,
     targetPrice: null,
@@ -205,10 +207,10 @@ describe("Base DodoEgg", () => {
   // V2 DodoEgg Setup
   const baseConfigV2 = {
     id: uuidv4(),
-    chainId: "1",
-    newTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-    baseTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    pairAddress: "0x1234567890123456789012345678901234567890",
+    chainId: "8453",
+    newTokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    baseTokenAddress: "0x4200000000000000000000000000000000000006",
+    pairAddress: "0x88A43bbDF9D098eEC7bCEda4e2494615dfD9bB9C",
     v3: false,
     fee: null,
     auditResults: null,
@@ -298,11 +300,11 @@ describe("Base DodoEgg", () => {
   const baseConfigV3 = {
     id: uuidv4(),
     chainId: "8453",
-    newTokenAddress: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
-    baseTokenAddress: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-    pairAddress: "0x1234567890123456789012345678901234567890",
-    v3: false,
-    fee: null,
+    newTokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    baseTokenAddress: "0x4200000000000000000000000000000000000006",
+    pairAddress: "0xd0b53D9277642d899DF5C87A3966A349A798F224",
+    v3: true,
+    fee: "3000",
     auditResults: null,
     intialPrice: null,
     targetPrice: null,
