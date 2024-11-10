@@ -30,37 +30,39 @@ class Monitor {
    * @returns decimal of a token
    */
   async getTokenDecimals(tokenAddress) {
-
     try {
       const tokenContract = new ethers.Contract(
         tokenAddress,
         ERC20_ABI,
         await this.alchemy.config.getProvider()
       );
-
-      return await tokenContract.decimals();
-      
+      const decimals = await tokenContract.decimals();
+      return decimals;
     } catch (error) {
       console.error("There was a problem getting decimals! \n", error);
     }
-    
   }
 
-  getTargetListeners() {
-    return this.alchemy.ws.listenerCount(this.dodoEgg.targetListener.filters);
+  /**
+   * Gets the number of target listeners
+   * @returns number of target listeners
+   */
+  async getTargetListeners() {
+    return await this.alchemy.ws.listenerCount(
+      this.dodoEgg.targetListener.filters
+    );
   }
 
   /**
    * Removes a target listener event filter
    */
-  removeTargetListener() {
+  async removeTargetListener() {
     this.alchemy.ws.off(
       this.dodoEgg.targetListener.filter,
       this.dodoEgg.targetListener.listener
     );
-
-    // clean up target listener
-    this.dodoEgg.targetListener = null;
+    // // clean up target listener
+    // this.dodoEgg.targetListener = null;
   }
 
   /**
