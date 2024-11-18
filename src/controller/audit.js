@@ -1,5 +1,48 @@
 const { GoPlus } = require("@goplus/sdk-node");
 
+const securityChecks = [
+  "cybercrime",
+  "money_laundering",
+  "number_of_malicious_contracts_created",
+  "financial_crime",
+  "darkweb_transactions",
+  "reinit",
+  "phishing_activities",
+  "fake_kyc",
+  "blacklist_doubt",
+  "fake_standard_interface",
+  "stealing_attack",
+  "blackmail_activities",
+  "sanctioned",
+  "malicious_mining_activities",
+  "mixer",
+  "fake_token",
+  "honeypot_related_address",
+];
+
+// Contract Security Checks
+const contractSecurityChecks = [
+  "is_proxy",
+  "is_mintable",
+  "can_take_back_ownership",
+  "owner_change_balance",
+  "hidden_owner",
+  "selfdestruct",
+];
+
+// Trading Security Checks
+const tradingSecurityChecks = [
+  "cannot_buy",
+  "cannot_sell_all",
+  "is_honeypot",
+  "transfer_pausable",
+  "is_blacklisted",
+  "is_anti_whale",
+  "anti_whale_modifiable",
+  "trading_cooldown",
+  "personal_slippage_modifiable",
+];
+
 /**
  * Takes a chain id and token target address which then checks for popular scams or malicious token code
  * This is the first quick check before a more detailed examination of the token.
@@ -8,46 +51,22 @@ const { GoPlus } = require("@goplus/sdk-node");
  * Returns false if there is an error or if the tokne is unsafe
  */
 const maliciousCheck = async (chainId, targetAddress) => {
-  let response;
-
-  // Looks to see if token code displays popular scams or if its a known scammer address
   try {
-    response = await GoPlus.addressSecurity(
-      chainId,
-      targetAddress,
-      45 // 30 second timeout
-    );
+    const response = await GoPlus.addressSecurity(chainId, targetAddress, 45);
+    const data = response.result;
+
+    const isSecure = securityChecks.every((check) => data[check] === "0");
+
+    if (isSecure) {
+      return { sucess: true, fields: data };
+    }
+
+    console.log("Failed malicious check\n", data);
+    return { sucess: false, fields: null };
   } catch (error) {
     console.log(
-      "There was an problem retreiving data from GoPlus address security api call."
+      "There was a problem retrieving data from GoPlus address security api call."
     );
-  }
-
-  const data = response.result;
-
-  if (
-    data.cybercrime == "0" &&
-    data.money_laundering == "0" &&
-    data.number_of_malicious_contracts_created == "0" &&
-    data.financial_crime == "0" &&
-    data.darkweb_transactions == "0" &&
-    data.reinit == "0" &&
-    data.phishing_activities == "0" &&
-    data.fake_kyc == "0" &&
-    data.blacklist_doubt == "0" &&
-    data.fake_standard_interface == "0" &&
-    data.stealing_attack == "0" &&
-    data.blackmail_activities == "0" &&
-    data.sanctioned == "0" &&
-    data.malicious_mining_activities == "0" &&
-    data.mixer == "0" &&
-    data.fake_token == "0" &&
-    data.honeypot_related_address == "0"
-  ) {
-    return { sucess: true, fields: data };
-  } else {
-    console.log("Failed malicious check\n", data);
-
     return { sucess: false, fields: null };
   }
 };
@@ -61,159 +80,119 @@ const maliciousCheck = async (chainId, targetAddress) => {
  * @returns token security data
  */
 const getSecurityData = async (chainId, targetAddress) => {
-  let response, data;
+  // Constants at the top for better maintainability
+  const MAX_RETRIES = 5;
+  const RETRY_DELAY = 10000; // 10 seconds
+  const TIMEOUT = 45;
 
-  // Initial API call to fetch data
-  try {
-    response = await GoPlus.tokenSecurity(chainId, targetAddress, 45);
+  // Helper function to reduce code duplication
+  const fetchTokenSecurity = async () => {
+    try {
+      const response = await GoPlus.tokenSecurity(
+        chainId,
+        targetAddress,
+        TIMEOUT
+      );
+      return { data: response.result, error: null };
+    } catch (error) {
+      console.error("GoPlus token security API call failed:", error);
+      return { data: null, error };
+    }
+  };
 
-    data = response.result;
-  } catch (error) {
-    console.error(
-      "There was a problem retrieving data from GoPlus token security API call. \n" +
-        error
-    );
-
-    return { sucess: false, fields: null }; // Return early if the initial call fails
+  // Initial API call
+  const { data: initialData, error: initialError } = await fetchTokenSecurity();
+  if (initialError) {
+    return { success: false, fields: null };
   }
 
-  // Sometimes you have to wait few seconds to get the data from the token sniffer
-  // Retry 5 times if an empty object was returned
-  //
-  if (Object.keys(data).length === 0) {
-    let retryData;
-    let retry = 0;
+  // If we have valid data, return early
+  if (Object.keys(initialData).length > 0) {
+    const key = Object.keys(initialData)[0];
+    return initialData[key];
+  }
 
-    while (retry < 5) {
-      console.log("Retry attempt: ", retry);
+  // Retry logic
+  for (let retry = 0; retry < MAX_RETRIES; retry++) {
+    console.log(`Retry attempt: ${retry + 1}/${MAX_RETRIES}`);
 
-      try {
-        const retryResponse = await GoPlus.tokenSecurity(
-          chainId,
-          targetAddress,
-          45
-        );
-        retryData = retryResponse.result;
-      } catch (error) {
-        console.error(
-          "There was a problem retrieving data from GoPlus token security API call. \n" +
-            error
-        );
-        return { sucess: false, fields: null };
-      }
-
-      // Check if the data is no longer an empty object
-      //
-      if (Object.keys(retryData).length > 0) {
-        // Update the data and continue on
-        data = retryData;
-        break;
-      }
-
-      // Increment the retry counter
-      //
-      retry++;
-
-      // Wait 10 seconds before the next iteration
-      //
-      if (retry < 5) {
-        await new Promise((resolve) => setTimeout(resolve, 10000));
-      }
+    const { data: retryData, error: retryError } = await fetchTokenSecurity();
+    if (retryError) {
+      return { success: false, fields: null };
     }
 
-    // If the maximum retry is reached and is_open_source is still undefined
-    if (Object.keys(data).length === 0) {
-      console.log("Maximum retry attempts have been reached, token fails.");
-      return { sucess: false, fields: null };
+    if (Object.keys(retryData).length > 0) {
+      const key = Object.keys(retryData)[0];
+      return retryData[key];
+    }
+
+    if (retry < MAX_RETRIES - 1) {
+      await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
     }
   }
 
-  // Define the key of the object
-  //
-  let key = Object.keys(data)[0];
-
-  // return the security data
-  //
-  return data[key];
+  console.log("Maximum retry attempts reached, token fails.");
+  return { success: false, fields: null };
 };
 
 /**
  * Does the security check that gets the buy/sell tax and more...
  */
 const securityCheck = async (chainId, targetAddress) => {
-  // Perform the security audit with GoPlus.tokenSecurity data call
+  // Get the security data
   const data = await getSecurityData(chainId, targetAddress);
 
-  // Covert all this to use a switch statement by taking all of the data from getSecurityData and then adding all of the values i.e. is_proxy == "0" is_mintable == "0" etc...
-  // add them to an array then run the array through a switch statement to see if any of the values are true if the array equals a safe pair and false if it doesn't with the reason for is failure
-
-  // If the contract does not have open source code then it fails immediately
-  if (data.is_open_source == "1") {
-    // Contract Security Audit
-    if (
-      data.is_proxy == "0" &&
-      data.is_mintable == "0" &&
-      data.can_take_back_ownership == "0" &&
-      data.owner_change_balance == "0" &&
-      data.hidden_owner == "0" &&
-      data.selfdestruct == "0" &&
-      data.gas_abuse === undefined
-    ) {
-      // Trading Security Audit
-      if (
-        data.cannot_buy == "0" &&
-        data.cannot_sell_all == "0" &&
-        data.is_honeypot == "0" &&
-        data.transfer_pausable == "0" &&
-        data.is_blacklisted == "0" &&
-        data.is_anti_whale == "0" &&
-        data.anti_whale_modifiable == "0" &&
-        data.trading_cooldown == "0" &&
-        data.personal_slippage_modifiable == "0"
-      ) {
-        // Checks the buy and sell tax
-        if (data.buy_tax === "" || data.sell_tax === "") {
-          console.log("Unknown buy or sell tax!");
-          console.log("");
-          return { sucess: false, fields: null };
-        } else if (
-          parseFloat(data.buy_tax) <= 0.1 &&
-          parseFloat(data.sell_tax) <= 0.1
-        ) {
-          console.log("***  Token passes security check!  ***");
-          console.log("");
-          return { sucess: true, fields: data };
-        } else if (
-          parseFloat(data.buy_tax) > 0.1 &&
-          parseFloat(data.sell_tax) > 0.1
-        ) {
-          console.log(
-            `Token buy or sell tax is too high! \n Buy Tax: ${data.buy_tax} Sell Tax: ${data.sell_tax}`
-          );
-          console.log("");
-          return { sucess: false, fields: null };
-        } else {
-          console.error("**Unkown condition! | audit.js line 187**");
-          console.log("");
-          return { sucess: false, fields: null };
-        }
-      } else {
-        console.log("Token cannot be freely traded!");
-        console.log("");
-        return { sucess: false, fields: null };
-      }
-    } else {
-      console.log("Token fails contract security audit!");
-      console.log("");
-      return { sucess: false, fields: null };
-    }
-  } else {
+  // Check if contract is open source first
+  if (data.is_open_source !== "1") {
     console.log("Contract is not open source!");
-    console.log("");
+    return { sucess: false, fields: null };
+  }
+
+  const isContractSecure = contractSecurityChecks.every(
+    (check) => data[check] === "0" && data.gas_abuse === undefined
+  );
+
+  if (!isContractSecure) {
+    console.log("Token fails contract security audit!");
+    return { sucess: false, fields: null };
+  }
+
+  const isTradingSecure = tradingSecurityChecks.every(
+    (check) => data[check] === "0"
+  );
+
+  if (!isTradingSecure) {
+    console.log("Token cannot be freely traded!");
+    return { sucess: false, fields: null };
+  }
+
+  // Tax Checks
+  if (data.buy_tax === "" || data.sell_tax === "") {
+    console.log("Unknown buy or sell tax!");
+    return { sucess: false, fields: null };
+  }
+
+  const buyTax = parseFloat(data.buy_tax);
+  const sellTax = parseFloat(data.sell_tax);
+  const MAX_TAX = 0.1;
+
+  if (buyTax <= MAX_TAX && sellTax <= MAX_TAX) {
+    console.log("***  Token passes security check!  ***");
+    return { sucess: true, fields: data };
+  } else {
+    console.log(
+      `Token buy or sell tax is too high! \nBuy Tax: ${data.buy_tax} Sell Tax: ${data.sell_tax}`
+    );
     return { sucess: false, fields: null };
   }
 };
 
+/**
+ * Handles the audit process
+ * @param {number} chainId
+ * @param {string} targetAddress - the new token address
+ * @returns {Promise<{isSafe: boolean, fields: object}>}
+ */
 const audit = async (chainId, targetAddress) => {
   return new Promise(async (resolve) => {
     const malicious = await maliciousCheck(chainId, targetAddress);
