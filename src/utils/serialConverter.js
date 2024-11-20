@@ -1,5 +1,5 @@
 const { v4: uuidv4 } = require("uuid");
-const DodoEgg = require("../class/DodoEgg");
+const DodoEgg = require("../model/DodoEgg");
 
 /**
  * JSON data that should be parsed and converted into a DodoEgg object
@@ -12,7 +12,7 @@ const deserializeDodo = (data) => {
   const parsedData = JSON.parse(dataToString);
 
   // Create a new DodoEgg params object
-  
+
   const id = parsedData.id ?? uuidv4();
   const chainId = parsedData.chainId;
   const newTokenAddress = parsedData.newTokenAddress;
@@ -51,7 +51,6 @@ const deserializeDodo = (data) => {
   );
 
   // Return the dodoEgg
-  
 };
 
 /**

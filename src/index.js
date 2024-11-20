@@ -1,11 +1,11 @@
 require("dotenv").config({ path: "../.env" });
 const fs = require("fs");
 const WebSocket = require("ws");
+const app = new WebSocket("ws://127.0.0.1:8000");
 const path = require("path");
 const { ethers } = require("ethers");
 const { Alchemy, Interface } = require("alchemy-sdk");
-const dodoInspector = new WebSocket("ws://127.0.0.1:8000");
-
+const dodoWebsocket = require("./app");
 const checkIfTokenIsNew = require("./utils/newTokenChecker");
 const getAlchemySettings = require("./utils/getAlchemySettings");
 
@@ -137,8 +137,8 @@ const processEventData = (token0, token1, pair, fee, v3, chainId) => {
       fee: fee,
     };
 
-    // Send it to the auditing websocket
-    dodoInspector.send(bigIntSafeSerialize(data));
+    // Send it to the app
+    app.send(bigIntSafeSerialize(data));
 
     console.log(`Data sent to server`);
     console.log("");
@@ -159,25 +159,25 @@ const bigIntSafeSerialize = (obj) => {
  * Starts the program by activating listeners on all Uniswap v3 and v2 protocols
  */
 const main = async () => {
-  let chains = UNISWAP;
+  const wss = dodoWebsocket();
 
-  for (let i = 0; i < chains.length; i++) {
-    let name = chains[i].name;
-    let chainId = chains[i].chain_id;
-    let v2Factory = chains[i].v2.factory;
-    let v3Factory = chains[i].v3.factory;
+  for (let i = 0; i < UNISWAP.length; i++) {
+    let name = UNISWAP[i].name;
+    let chainId = UNISWAP[i].chain_id;
+    let v2Factory = UNISWAP[i].v2.factory;
+    let v3Factory = UNISWAP[i].v3.factory;
 
     // Connect to websocket provider instance
     let provider = new Alchemy(getAlchemySettings(chainId));
 
     if (v2Factory != null) {
       console.log(`Activating ${name} V2 Listener!`);
-      await activateV2Listener(v2Factory, chainId, provider);
+      await activateV2Listener(v2Factory, chainId, provider, wss);
     }
 
     if (v3Factory != null) {
       console.log(`Activating ${name} V3 Listener!`);
-      await activateV3Listener(v3Factory, chainId, provider);
+      await activateV3Listener(v3Factory, chainId, provider, wss);
     }
   }
 };

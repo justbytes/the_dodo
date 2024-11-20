@@ -61,9 +61,16 @@ class DodoEgg {
   get id() {
     return this.id;
   }
+  set id(id) {
+    this.id = id;
+  }
 
   get chainId() {
     return this.chainId;
+  }
+
+  set chainId(chainId) {
+    this.chainId = chainId;
   }
 
   get newTokenAddress() {
