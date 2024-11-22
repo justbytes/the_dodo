@@ -2,7 +2,8 @@ const { ethers } = require("ethers");
 const { Alchemy, Interface } = require("alchemy-sdk");
 const WebSocket = require("ws");
 const app = new WebSocket("ws://127.0.0.1:8000");
-const getAlchemySettings = require("./model/utils/getAlchemySettings");
+const getAlchemySettings = require("./utils/getAlchemySettings");
+const checkIfTokenIsNew = require("./utils/newTokenChecker");
 
 const {
   abi: UniswapV3FactoryABI,
@@ -23,16 +24,17 @@ class V3TokenPairListener {
    * Activates a listener for a pair that is created on the Uniswap v3 protocol
    */
   activateListener() {
+    console.log(`Activating ${this.chainId} V3 listener!`);
     // Filter for PoolCreated events indicating a new pool
     const filter = {
-      address: factoryAddress,
+      address: this.factoryAddress,
       topics: [FACTORY_V3_INTERFACE.getEvent("PoolCreated").topicHash],
     };
 
     // Activate the listener
-    provider.ws.on(filter, (log) => {
+    this.provider.ws.on(filter, (log) => {
       console.log("New PoolCreated event detected!");
-      processEventLog(log);
+      this.processEventLog(log);
     });
   }
 
@@ -48,15 +50,16 @@ class V3TokenPairListener {
 
     console.log(
       `
-            ************* | V3 pair detected | *************\n
-            ******\n
-            ****** token0: ${token0}\n
-            ****** token1: ${token1}\n
-            ****** pair address: ${pool}\n
-            ****** fee: ${fee}\n
-            ******\n
-            ************************************************
-            `
+************* | V3 pair detected | *************\n
+******\n
+****** chainId: ${this.chainId}\n
+****** token0: ${token0}\n
+****** token1: ${token1}\n
+****** pair address: ${pool}\n
+****** fee: ${fee}\n
+******\n
+************************************************
+`
     );
     console.log("");
 

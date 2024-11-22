@@ -1,7 +1,10 @@
 const fs = require("fs");
 const path = require("path");
 
-const KNOWN_TOKENS_JSON = path.join(__dirname, "../../data/known_tokens.json");
+const KNOWN_TOKENS_JSON = path.join(
+  __dirname,
+  "../../../data/known_tokens.json"
+);
 const KNOWN_TOKEN_DATA = fs.readFileSync(KNOWN_TOKENS_JSON);
 const KNOWN_TOKENS = JSON.parse(KNOWN_TOKEN_DATA);
 

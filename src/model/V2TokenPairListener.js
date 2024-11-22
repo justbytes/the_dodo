@@ -2,7 +2,8 @@ const { ethers } = require("ethers");
 const { Alchemy, Interface } = require("alchemy-sdk");
 const WebSocket = require("ws");
 const app = new WebSocket("ws://127.0.0.1:8000");
-const getAlchemySettings = require("./model/utils/getAlchemySettings");
+const getAlchemySettings = require("./utils/getAlchemySettings");
+const checkIfTokenIsNew = require("./utils/newTokenChecker");
 
 // Get contract ABI's
 const {
@@ -29,12 +30,13 @@ class V2TokenPairListener {
    * Activates a listener for a pair that is created on the Uniswap v2 protocol
    */
   activateListener() {
+    console.log(`Activating ${this.chainId} V2 listener!`);
     const filter = {
-      address: factoryAddress,
+      address: this.factoryAddress,
       topics: [FACTORY_V2_INTERFACE.getEvent("PairCreated").topicHash],
     };
 
-    provider.ws.on(filter, (log) => {
+    this.provider.ws.on(filter, (log) => {
       console.log("New PairCreated event detected!");
       this.processEventLog(log);
     });
@@ -53,14 +55,15 @@ class V2TokenPairListener {
 
     console.log(
       `
-            ************* | V2 pair detected | *************\n
-            ******\n
-            ****** token0: ${token0}\n
-            ****** token1: ${token1}\n
-            ****** pair address: ${pair}\n
-            ******\n
-            ************************************************
-            `
+************* | V2 pair detected | *************\n
+******\n
+****** chainId: ${this.chainId}\n
+****** token0: ${token0}\n
+****** token1: ${token1}\n
+****** pair address: ${pair}\n
+******\n
+************************************************
+`
     );
     console.log("");
 

@@ -1,8 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 const dodoWebsocket = require("./app");
-const V2TokenPairListener = require("./utils/tokenFetchers/v2TokenPairListener");
-const V3TokenPairListener = require("./utils/tokenFetchers/v3TokenPairListener");
+const V2TokenPairListener = require("./model/V2TokenPairListener");
+const V3TokenPairListener = require("./model/V3TokenPairListener");
 
 // Retrieve Uniswap address data file and parse the json
 const UNISWAP_JSON = path.join(__dirname, "../data/uniswap.json");
@@ -23,14 +23,28 @@ const main = async () => {
     let v2Factory = UNISWAP[i].v2.factory;
     let v3Factory = UNISWAP[i].v3.factory;
 
-    if (v2Factory != null) {
-      console.log(`Activating ${name} V2 Listener!`);
-      new V2TokenPairListener(v2Factory, chainId);
+    // Start V2 listener
+    try {
+      if (v2Factory != null) {
+        new V2TokenPairListener(v2Factory, chainId);
+      }
+    } catch (error) {
+      console.error(
+        `There was an error activating the ${chainId} V2 listener. | index.js\n` +
+          error
+      );
     }
 
-    if (v3Factory != null) {
-      console.log(`Activating ${name} V3 Listener!`);
-      new V3TokenPairListener(v3Factory, chainId);
+    // Start V3 listener
+    try {
+      if (v3Factory != null) {
+        new V3TokenPairListener(v3Factory, chainId);
+      }
+    } catch (error) {
+      console.error(
+        `There was an error activating the ${chainId} V3 listener. | index.js\n` +
+          error
+      );
     }
   }
 };
