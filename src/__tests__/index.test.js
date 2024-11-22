@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const { v4: uuidv4 } = require("uuid");
 const dodoWebsocket = require("../app");
-const { serializeDodo, deserializeDodo } = require("../utils/dodoCoder");
+const { deserializeDodo } = require("../utils/dodoCoder");
 
 const ethConfigV2 = {
   id: uuidv4(),
@@ -25,10 +25,7 @@ const ethConfigV2 = {
 /**
  * Testing a DodoEgg instance on the ETH network
  */
-describe("Send data to app.js", () => {
-  //   const wss = dodoWebsocket();
-  //   const app = new WebSocket("ws://127.0.0.1:8000");
-
+describe("Creates a DodoEgg instance", () => {
   it("should create a new DodoEgg instance", () => {
     let data = {
       chainId: "1",
@@ -41,8 +38,6 @@ describe("Send data to app.js", () => {
     data = JSON.stringify(data, (key, value) =>
       typeof value === "bigint" ? value.toString() : value
     );
-
-    console.log("data ", data);
 
     let dodoEgg = deserializeDodo(data);
 

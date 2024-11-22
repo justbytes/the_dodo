@@ -75,14 +75,11 @@ const getTokenDecimals = async (tokenAddress) => {
    * @returns the price
    */
   const getPrice = async (version) => {
-    // TODO: return a promise
-    return new Promise(async (resolve, reject) => {
-      if (version === "v2") {
-        resolve({ price: await v2GetPrice() });
-      } else {
-        resolve({ price: await v3GetPrice() });
-      }
-    });
+    if (version === "v2") {
+      return { price: await v2GetPrice() };
+    } else {
+      return { price: await v3GetPrice() };
+    }
   };
 };
 

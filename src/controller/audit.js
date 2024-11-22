@@ -157,6 +157,8 @@ const securityCheck = async (chainId, targetAddress) => {
     return { sucess: false, fields: null };
   }
 
+  console.log(data);
+
   const isTradingSecure = tradingSecurityChecks.every(
     (check) => data[check] === "0"
   );
@@ -191,28 +193,20 @@ const securityCheck = async (chainId, targetAddress) => {
  * Handles the audit process
  * @param {number} chainId
  * @param {string} targetAddress - the new token address
- * @returns {Promise<{isSafe: boolean, fields: object}>}
  */
 const audit = async (chainId, targetAddress) => {
-  return new Promise(async (resolve) => {
-    const malicious = await maliciousCheck(chainId, targetAddress);
+  const malicious = await maliciousCheck(chainId, targetAddress);
+  if (!malicious.sucess) {
+    return { isSafe: false, fields: null };
+  }
 
-    if (!malicious.sucess) {
-      resolve({ isSafe: false, fields: null });
-      return;
-    }
+  const secure = await securityCheck(chainId, targetAddress);
+  if (!secure.sucess) {
+    return { isSafe: false, fields: null };
+  }
 
-    const secure = await securityCheck(chainId, targetAddress);
-
-    if (!secure.sucess) {
-      resolve({ isSafe: false, fields: null });
-      return;
-    }
-
-    const auditResults = { ...malicious.fields, ...secure.fields };
-    resolve({ isSafe: true, fields: auditResults });
-    return;
-  });
+  const auditResults = { ...malicious.fields, ...secure.fields };
+  return { isSafe: true, fields: auditResults };
 };
 
 module.exports = audit;
