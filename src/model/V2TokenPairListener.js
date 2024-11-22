@@ -79,7 +79,7 @@ class V2TokenPairListener {
       };
 
       // Send it to the app
-      app.send(bigIntSafeSerialize(data));
+      app.send(this.bigIntSafeSerialize(data));
 
       console.log(`Data sent to server`);
       console.log("");

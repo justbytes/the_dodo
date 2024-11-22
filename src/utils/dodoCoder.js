@@ -12,7 +12,6 @@ const deserializeDodo = (data) => {
   const parsedData = JSON.parse(dataToString);
 
   // Create a new DodoEgg params object
-
   const id = parsedData.id ?? uuidv4();
   const chainId = parsedData.chainId;
   const newTokenAddress = parsedData.newTokenAddress;
@@ -54,6 +53,7 @@ const deserializeDodo = (data) => {
 };
 
 /**
+ * || This might be useless ||
  * Convert the dodoEgg.getInfo() into JSON data so it can be sent
  * over a websocket
  * @param {*} data a DodoEgg.getInfo
@@ -61,7 +61,6 @@ const deserializeDodo = (data) => {
  */
 const serializeDodo = (data) => {
   // Convert data to JSON
-
   const rawDodoData = {
     ...data,
   };

@@ -1,5 +1,5 @@
 const WebSocket = require("ws");
-const { deserializeDodo } = require("./utils/dodoCoder");
+const { deserializeDodo, serializeDodo } = require("./utils/dodoCoder");
 
 /**
  * Opens a websocket that inspects a new pair for liquidity
