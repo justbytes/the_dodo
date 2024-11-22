@@ -1,0 +1,114 @@
+const { ethers } = require("ethers");
+const { Alchemy, Interface } = require("alchemy-sdk");
+const WebSocket = require("ws");
+const app = new WebSocket("ws://127.0.0.1:8000");
+const getAlchemySettings = require("./model/utils/getAlchemySettings");
+
+const {
+  abi: UniswapV3FactoryABI,
+} = require("@uniswap/v3-core/artifacts/contracts/UniswapV3Factory.sol/UniswapV3Factory.json");
+
+// Interface objects so the contract abis can be parsed
+const FACTORY_V3_INTERFACE = new ethers.Interface(UniswapV3FactoryABI);
+
+class V3TokenPairListener {
+  constructor(factoryAddress, chainId) {
+    this.factoryAddress = factoryAddress;
+    this.chainId = chainId;
+    this.provider = new Alchemy(getAlchemySettings(chainId));
+    this.activateListener();
+  }
+
+  /**
+   * Activates a listener for a pair that is created on the Uniswap v3 protocol
+   */
+  activateListener() {
+    // Filter for PoolCreated events indicating a new pool
+    const filter = {
+      address: factoryAddress,
+      topics: [FACTORY_V3_INTERFACE.getEvent("PoolCreated").topicHash],
+    };
+
+    // Activate the listener
+    provider.ws.on(filter, (log) => {
+      console.log("New PoolCreated event detected!");
+      processEventLog(log);
+    });
+  }
+
+  /**
+   * Decoded v3 log data
+   * @param {*} log encoded event data
+   * @param {*} chainId pass the chain id of the blockchain
+   */
+  processEventLog(log) {
+    const decodedLog = FACTORY_V3_INTERFACE.parseLog(log);
+
+    const { token0, token1, fee, tickSpacing, pool } = decodedLog.args;
+
+    console.log(
+      `
+            ************* | V3 pair detected | *************\n
+            ******\n
+            ****** token0: ${token0}\n
+            ****** token1: ${token1}\n
+            ****** pair address: ${pool}\n
+            ****** fee: ${fee}\n
+            ******\n
+            ************************************************
+            `
+    );
+    console.log("");
+
+    // New token checking logic
+    if (checkIfTokenIsNew(token0)) {
+      // Create a data object
+      const data = {
+        chainId: this.chainId,
+        newToken: token0,
+        baseToken: token1,
+        pairAddress: pool,
+        v3: true,
+        fee: fee,
+      };
+
+      // Send it to the app
+      app.send(this.bigIntSafeSerialize(data));
+
+      console.log(`Data sent to server`);
+      console.log("");
+    } else {
+      // Check if the second token is new
+      if (checkIfTokenIsNew(token1)) {
+        // Create a data object
+        const data = {
+          chainId: this.chainId,
+          newToken: token1,
+          baseToken: token0,
+          pairAddress: pool,
+          v3: true,
+          fee: fee,
+        };
+
+        // Send it to the app
+        app.send(this.bigIntSafeSerialize(data));
+
+        console.log(`Data sent to server`);
+        console.log("");
+      } else {
+        console.log("These are two already known tokens...");
+        console.log(token0 + "/" + token1);
+        console.log("");
+      }
+    }
+  }
+
+  // Utility function for BigInt-safe serialization
+  bigIntSafeSerialize(obj) {
+    return JSON.stringify(obj, (key, value) =>
+      typeof value === "bigint" ? value.toString() : value
+    );
+  }
+}
+
+module.exports = V3TokenPairListener;

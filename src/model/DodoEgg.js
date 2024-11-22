@@ -1,5 +1,5 @@
 const { Alchemy } = require("alchemy-sdk");
-const getAlchemySettings = require("../utils/getAlchemySettings");
+const getAlchemySettings = require("./utils/getAlchemySettings");
 
 class DodoEgg {
   /**
@@ -152,7 +152,7 @@ class DodoEgg {
   set newTokenDecimal(newTokenDecimal) {
     this.newTokenDecimal = newTokenDecimal;
   }
-
+  
   get baseAssetReserve() {
     return this.baseAssetReserve;
   }
