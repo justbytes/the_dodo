@@ -131,7 +131,6 @@ const getSecurityData = async (chainId, targetAddress) => {
 const securityCheck = async (chainId, targetAddress) => {
   // Get the security data
   const data = await getSecurityData(chainId, targetAddress);
-  console.log(data);
 
   // Check if contract is open source first
   if (data.is_open_source !== "1") {

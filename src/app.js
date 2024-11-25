@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
 const { deserializeDodo, serializeDodo } = require("./utils/dodoCoder");
-const { audit } = require("./controller/audit");
+const audit = require("./controller/audit");
 
 /**
  * Opens a websocket that inspects a new pair for liquidity
@@ -32,10 +32,13 @@ const dodoWebsocket = () => {
 
       // Conduct an audit to make sure the pair is safe
       try {
-        const audit = await audit(dodoEgg.chainId, dodoEgg.newTokenAddress);
+        const auditResults = await audit(
+          dodoEgg.chainId,
+          dodoEgg.newTokenAddress
+        );
 
         // If the audit failed, delete the pair from the Map
-        if (!audit.isSafe) {
+        if (!auditResults.isSafe) {
           dodos.delete(dodoEgg.id);
           return;
         }
