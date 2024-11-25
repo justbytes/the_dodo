@@ -68,8 +68,8 @@ class V3TokenPairListener {
       // Create a data object
       const data = {
         chainId: this.chainId,
-        newToken: token0,
-        baseToken: token1,
+        newTokenAddress: token0,
+        baseTokenAddress: token1,
         pairAddress: pool,
         v3: true,
         fee: fee,
@@ -86,8 +86,8 @@ class V3TokenPairListener {
         // Create a data object
         const data = {
           chainId: this.chainId,
-          newToken: token1,
-          baseToken: token0,
+          newTokenAddress: token1,
+          baseTokenAddress: token0,
           pairAddress: pool,
           v3: true,
           fee: fee,

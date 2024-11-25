@@ -2,7 +2,7 @@ const audit = require("../controller/audit");
 const data = {
   id: "1234",
   chainId: "1",
-  newTokenAddress: "0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24",
+  newTokenAddress: "0xc47ef9b19c3e29317a50f5fbe594eba361dada4a",
   baseTokenAddress: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
   pairAddress: "0xA43fe16908251ee70EF74718545e4FE6C5cCEc9f",
   v3: false,

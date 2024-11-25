@@ -27,26 +27,27 @@ const dodoWebsocket = () => {
       // Convert the data into a DodoEgg object
       const dodoEgg = deserializeDodo(data);
 
-      console.log("app: ", dodoEgg);
-      // // Add the new pair to the Map
-      // dodos.set(dodoEgg.id, dodoEgg);
+      // Add the new pair to the Map
+      dodos.set(dodoEgg.id, dodoEgg);
 
-      // // Conduct an audit to make sure the pair is safe
-      // try {
-      //   const audit = await audit();
+      // Conduct an audit to make sure the pair is safe
+      try {
+        const audit = await audit(dodoEgg.chainId, dodoEgg.newTokenAddress);
 
-      //   // If the audit failed, delete the pair from the Map
-      //   if (!audit) {
-      //     dodos.delete(dodoEgg.id);
-      //     return;
-      //   }
-      // } catch (error) {
-      //   console.error(
-      //     "There was an error when conducting the audit. | app.js\n" + error
-      //   );
-      //   dodos.delete(dodoEgg.id);
-      //   return;
-      // }
+        // If the audit failed, delete the pair from the Map
+        if (!audit.isSafe) {
+          dodos.delete(dodoEgg.id);
+          return;
+        }
+
+        // If the audit passed, set the target price
+      } catch (error) {
+        console.error(
+          "There was an error when conducting the audit. | app.js\n" + error
+        );
+        dodos.delete(dodoEgg.id);
+        return;
+      }
 
       // await dodoEgg.setTargetPrice();
     });
