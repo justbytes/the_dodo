@@ -7,9 +7,7 @@ const securityChecks = [
   "financial_crime",
   "darkweb_transactions",
   "reinit",
-  "phishing_activities",
   "fake_kyc",
-  "blacklist_doubt",
   "fake_standard_interface",
   "stealing_attack",
   "blackmail_activities",
@@ -22,7 +20,6 @@ const securityChecks = [
 
 // Contract Security Checks
 const contractSecurityChecks = [
-  "is_proxy",
   "is_mintable",
   "can_take_back_ownership",
   "owner_change_balance",
@@ -36,9 +33,6 @@ const tradingSecurityChecks = [
   "cannot_sell_all",
   "is_honeypot",
   "transfer_pausable",
-  "is_blacklisted",
-  "is_anti_whale",
-  "anti_whale_modifiable",
   "trading_cooldown",
   "personal_slippage_modifiable",
 ];
@@ -141,6 +135,7 @@ const getSecurityData = async (chainId, targetAddress) => {
 const securityCheck = async (chainId, targetAddress) => {
   // Get the security data
   const data = await getSecurityData(chainId, targetAddress);
+  console.log(data);
 
   // Check if contract is open source first
   if (data.is_open_source !== "1") {
