@@ -21,11 +21,15 @@ const data = {
 /**
  * Testing a DodoEgg instance on the ETH network
  */
-describe("Test audit function", () => {
-  it("should pass audit", async () => {
+describe("Should get token data", () => {
+  it("Should get token meta data", async () => {
     const auditResults = await audit(data.chainId, data.newTokenAddress);
     console.log(auditResults);
 
     expect(auditResults.isSafe).toEqual(true);
+  });
+
+  it("Should get token source code", async () => {
+    console.log(">..");
   });
 });

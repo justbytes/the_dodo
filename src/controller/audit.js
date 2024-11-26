@@ -38,6 +38,10 @@ const tradingSecurityChecks = ["cannot_buy", "cannot_sell_all"];
  */
 const maliciousCheck = async (chainId, targetAddress) => {
   try {
+    console.log("chainId", chainId);
+    console.log("targetAddress", targetAddress);
+    console.log("");
+
     const response = await GoPlus.addressSecurity(chainId, targetAddress, 45);
     const data = response.result;
 
@@ -51,7 +55,8 @@ const maliciousCheck = async (chainId, targetAddress) => {
     return { sucess: false, fields: null };
   } catch (error) {
     console.log(
-      "There was a problem retrieving data from GoPlus address security api call."
+      "There was a problem retrieving data from GoPlus address security api call.\n",
+      error
     );
     return { sucess: false, fields: null };
   }
