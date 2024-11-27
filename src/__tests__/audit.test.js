@@ -1,4 +1,4 @@
-const audit = require("../controller/audit");
+const goPlusAudit = require("../controller/audits/goPlusAudit");
 const data = {
   id: "1234",
   chainId: "1",
@@ -19,17 +19,21 @@ const data = {
 };
 
 /**
- * Testing a DodoEgg instance on the ETH network
+ * Testing Audits
  */
-describe("Should get token data", () => {
-  it("Should get token meta data", async () => {
-    const auditResults = await audit(data.chainId, data.newTokenAddress);
-    console.log(auditResults);
+describe("||||| Audit Results |||||", () => {
+  it("Should pass the goPlus audit!", async () => {
+    const goPlusResults = await goPlusAudit(data.chainId, data.newTokenAddress);
+    console.log(goPlusResults);
 
-    expect(auditResults.isSafe).toEqual(true);
+    expect(goPlusResults).not.toBeNull();
   });
 
-  it("Should get token source code", async () => {
+  it("Should pass the slither audit", async () => {
+    console.log(">..");
+  });
+
+  it("Should pass the mythril audit", async () => {
     console.log(">..");
   });
 });

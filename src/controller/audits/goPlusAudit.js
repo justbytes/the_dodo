@@ -1,64 +1,23 @@
 const { GoPlus } = require("@goplus/sdk-node");
 
-const securityChecks = [
-  "cybercrime",
-  "money_laundering",
-  "number_of_malicious_contracts_created",
-  "financial_crime",
-  "darkweb_transactions",
-  "reinit",
-  "fake_kyc",
-  "fake_standard_interface",
-  "stealing_attack",
-  "blackmail_activities",
-  "sanctioned",
-  "malicious_mining_activities",
-  "mixer",
-  "fake_token",
-  "honeypot_related_address",
-];
-
-// Contract Security Checks || Not used currently because it doesn't work pass popular meme coins
-const contractSecurityChecks = [
-  "is_mintable",
-  "can_take_back_ownership",
-  "owner_change_balance",
-  "hidden_owner",
-  "selfdestruct",
-];
-
-// Trading Security Checks
-const tradingSecurityChecks = ["cannot_buy", "cannot_sell_all"];
-
 /**
- * Performs a GoPlus malicious check on the token
+ * Performs a GoPlus malicious check on new token address. This data isn't going to be used
+ * immediately but will be used to record the results for future analysis.
  * @param {*} chainId
  * @param {*} targetAddress
  * @returns
  */
 const maliciousCheck = async (chainId, targetAddress) => {
+  // Make the api call and return the data if it is successful
   try {
-    console.log("chainId", chainId);
-    console.log("targetAddress", targetAddress);
-    console.log("");
-
     const response = await GoPlus.addressSecurity(chainId, targetAddress, 45);
-    const data = response.result;
-
-    const isSecure = securityChecks.every((check) => data[check] === "0");
-
-    if (isSecure) {
-      return { sucess: true, fields: data };
-    }
-
-    console.log("Failed malicious check\n", data);
-    return { sucess: false, fields: null };
+    return response.result;
   } catch (error) {
     console.log(
       "There was a problem retrieving data from GoPlus address security api call.\n",
       error
     );
-    return { sucess: false, fields: null };
+    return null;
   }
 };
 
@@ -140,8 +99,11 @@ const securityCheck = async (chainId, targetAddress) => {
   // Check if contract is open source first
   if (data.is_open_source !== "1") {
     console.log("Contract is not open source!");
-    return { sucess: false, fields: null };
+    return false;
   }
+
+  // Trading Security Checks
+  const tradingSecurityChecks = ["cannot_buy", "cannot_sell_all"];
 
   // Check if trading is secure
   const isTradingSecure = tradingSecurityChecks.every(
@@ -150,13 +112,13 @@ const securityCheck = async (chainId, targetAddress) => {
 
   if (!isTradingSecure) {
     console.log("Token cannot be freely traded!");
-    return { sucess: false, fields: null };
+    return false;
   }
 
   // Check if the buy/sell tax is unknown
   if (data.buy_tax === "" || data.sell_tax === "") {
     console.log("Unknown buy or sell tax!");
-    return { sucess: false, fields: null };
+    return false;
   }
 
   const buyTax = parseFloat(data.buy_tax);
@@ -165,33 +127,35 @@ const securityCheck = async (chainId, targetAddress) => {
 
   if (buyTax <= MAX_TAX && sellTax <= MAX_TAX) {
     console.log("***  Token passes security check!  ***");
-    return { sucess: true, fields: data };
+
+    return data;
   } else {
     console.log(
       `Token buy or sell tax is too high! \nBuy Tax: ${data.buy_tax} Sell Tax: ${data.sell_tax}`
     );
-    return { sucess: false, fields: null };
+    return false;
   }
 };
 
 /**
- * Handles the audit process
+ * Run the GoPlus audit on the new token address and collect the results for analysis
  * @param {number} chainId
  * @param {string} targetAddress - the new token address
  */
-const audit = async (chainId, targetAddress) => {
-  const malicious = await maliciousCheck(chainId, targetAddress);
-  if (!malicious.sucess) {
-    return { isSafe: false, fields: null };
+const goPlusAudit = async (chainId, targetAddress) => {
+  // Get the malicious results can be null if something went wrong with the api call
+  const maliciousResults = await maliciousCheck(chainId, targetAddress);
+
+  // Get the security results
+  const securityResults = await securityCheck(chainId, targetAddress);
+
+  // If the security check fails, return false
+  if (!securityResults) {
+    return false;
   }
 
-  const secure = await securityCheck(chainId, targetAddress);
-  if (!secure.sucess) {
-    return { isSafe: false, fields: null };
-  }
-
-  const auditResults = { ...malicious.fields, ...secure.fields };
-  return { isSafe: true, fields: auditResults };
+  // Combine the results
+  return { GoPlusAudit: { ...maliciousResults, ...securityResults } };
 };
 
-module.exports = audit;
+module.exports = goPlusAudit;
