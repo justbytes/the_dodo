@@ -30,29 +30,7 @@ const dodoWebsocket = () => {
       // Add the new pair to the Map
       dodos.set(dodoEgg.id, dodoEgg);
 
-      // Conduct an audit to make sure the pair is safe
-      try {
-        const goPlusResults = await goPlusAudit(
-          dodoEgg.chainId,
-          dodoEgg.newTokenAddress
-        );
-
-        // If the audit failed, delete the pair from the Map
-        if (!goPlusResults) {
-          dodos.delete(dodoEgg.id);
-          return;
-        }
-
-        // If the audit passed, set the target price
-      } catch (error) {
-        console.error(
-          "There was an error when conducting the audit. | app.js\n" + error
-        );
-
-        // Delete the pair from the Map
-        dodos.delete(dodoEgg.id);
-        return;
-      }
+      // Do the audit
 
       // await dodoEgg.setTargetPrice();
     });
