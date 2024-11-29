@@ -8,11 +8,10 @@ require("dotenv").config(path.join(__dirname, "../../../.env"));
  */
 const getInfuraSettings = (chainId) => {
   switch (Number(chainId)) {
-    case 1:
-      return {
-        url: `https://mainnet.infura.io/v3/`,
-        id: process.env.INFURA_ID,
-      };
+    case 1: // Eth Mainnet
+      return `--rpc infura-mainnet`;
+    case 8453: // Base mainnet
+      return `--rpc mainnet.base.org:443 --rpctls True`;
     default:
       return false;
   }

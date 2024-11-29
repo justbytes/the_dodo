@@ -1,7 +1,7 @@
 const { exec } = require("child_process");
-const Web3 = require("web3");
 const util = require("util");
 const execPromise = util.promisify(exec);
+const getInfuraSettings = require("../utils/getInfuraSettings");
 
 /**
  * Format Mythril results
@@ -24,11 +24,13 @@ const formatResults = (results) => {
 };
 
 // Example usage
-const mythrilAudit = async (targetAddress) => {
+const mythrilAudit = async (chainId, targetAddress) => {
   try {
     // Run Mythril using command line
     const { stdout, stderr } = await execPromise(
-      `myth analyze -a ${targetAddress} --infura-id ${process.env.INFURA_ID} -o json` // still needs to be able to change chains
+      `myth analyze -a ${targetAddress} ${getInfuraSettings(
+        chainId
+      )} --infura-id ${process.env.INFURA_ID} -o json`
     );
 
     if (stderr) {
@@ -37,6 +39,7 @@ const mythrilAudit = async (targetAddress) => {
     }
 
     const results = JSON.parse(stdout);
+    console.log(results);
     return formatResults(results);
   } catch (error) {
     console.error("Analysis failed:", error);
@@ -44,4 +47,6 @@ const mythrilAudit = async (targetAddress) => {
   }
 };
 
-module.exports = mythrilAudit;
+mythrilAudit(1, "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2");
+
+//module.exports = mythrilAudit;
