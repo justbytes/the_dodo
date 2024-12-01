@@ -42,6 +42,9 @@ const getSecurityData = async (chainId, targetAddress) => {
         targetAddress,
         TIMEOUT
       );
+
+      console.log("GoPlus response:", response);
+
       return { data: response.result, error: null };
     } catch (error) {
       console.error("GoPlus token security API call failed:", error);
@@ -50,17 +53,21 @@ const getSecurityData = async (chainId, targetAddress) => {
   };
 
   // Initial API call
-  const { data: initialData, error: initialError } = await fetchTokenSecurity();
+  const results = await fetchTokenSecurity();
+
+  //console.log(results);
 
   // If there is an error exit
-  if (initialError) {
+  if (results.error) {
     return { success: false, fields: null };
   }
 
+  //console.log(results.data);
+
   // If we have valid data, return early
-  if (Object.keys(initialData).length > 0) {
-    const key = Object.keys(initialData)[0];
-    return initialData[key];
+  if (Object.keys(results.data).length > 0) {
+    const key = Object.keys(results.data)[0];
+    return results.data[key];
   }
 
   // Retry logic in case the data is empty

@@ -1,5 +1,5 @@
 const main = async (chainId, newTokenAddress) => {
-  let goPlusAudit, slitherAudit, mythrilAudit;
+  let goPlusAudit, mythrilAudit;
 
   // GoPlus audit
   try {
@@ -17,26 +17,13 @@ const main = async (chainId, newTokenAddress) => {
     return false;
   }
 
-  // Slither audit
-  try {
-    console.log("Slither audit");
-
-    if (!slitherResults) {
-      return false;
-    }
-  } catch (error) {
-    console.error(
-      "| index.js | There was an error with the Slither audit.\n" + error
-    );
-
-    return false;
-  }
-
   // Mythril audit
   try {
     console.log("Mythril audit");
 
-    if (!mythrilAudit) {
+    const mythrilResults = await mythrilAudit(chainId, newTokenAddress);
+
+    if (!mythrilResults) {
       return false;
     }
   } catch (error) {
@@ -47,7 +34,7 @@ const main = async (chainId, newTokenAddress) => {
     return false;
   }
 
-  return { goPlusAudit, slitherAudit, mythrilAudit };
+  return { goPlusAudit, mythrilAudit };
 };
 
 module.exports = main;
