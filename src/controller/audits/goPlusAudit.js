@@ -10,7 +10,7 @@ const { GoPlus } = require("@goplus/sdk-node");
 const maliciousCheck = async (chainId, targetAddress) => {
   // Make the api call and return the data if it is successful
   try {
-    const response = await GoPlus.addressSecurity(chainId, targetAddress, 45);
+    const response = await GoPlus.addressSecurity(chainId, targetAddress);
     return response.result;
   } catch (error) {
     console.log(

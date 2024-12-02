@@ -59,29 +59,29 @@ describe("__Audits__", () => {
 
   describe("Mythril Audit", () => {
     it("Should pass", async () => {
-      const [baseWethResults] = await Promise.all([
-        //mythrilAudit(eth_data.chainId, eth_data.baseTokenAddress),
-        //mythrilAudit(base_data.chainId, base_data.baseTokenAddress),
+      const [ethResults, baseResults] = await Promise.all([
+        mythrilAudit(eth_data.chainId, eth_data.baseTokenAddress),
+        mythrilAudit(base_data.chainId, base_data.baseTokenAddress),
         // mythrilAudit(
         //   base_data.chainId,
         //   "0x4200000000000000000000000000000000000006"
         // ),
       ]);
 
-      // ETH chain assertions
-      // console.log("ETH Results:", ethResults);
-      // expect(ethResults).toBe(false);
-      // expect(ethResults.issues.length).toBe(0);
+      //ETH chain assertions
+      console.log("ETH Results:", ethResults);
+      expect(ethResults).toBe(false);
+      expect(ethResults.issues.length).toBe(0);
 
       // Base chain assertions
-      // console.log("Base Results:", baseResults);
-      // expect(baseResults.success).toBe(true);
-      // expect(baseResults.issues.length).toBe(0);
+      console.log("Base Results:", baseResults);
+      expect(baseResults.success).toBe(true);
+      expect(baseResults.issues.length).toBe(0);
 
       // Base WETH assertions
       // console.log("Base WETH Results:", baseWethResults);
       // expect(baseWethResults).toBe(true);
-      // expect(baseWethResults.issues.length).toBe(0);
+      //expect(baseWethResults.issues.length).toBe(0);
     });
   });
 });
