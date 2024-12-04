@@ -1,19 +1,17 @@
 const WebSocket = require("ws");
 const { deserializeDodo, serializeDodo } = require("./utils/dodoCoder");
-const goPlusAudit = require("./controller/audits/goPlusAudit");
+const goPlusAudit = require("./controller/audit/audits/GoPlusAudit");
 
 /**
  * Opens a websocket that inspects a new pair for liquidity
  * and "ensures" that there isn't any malisicous code in
  * the new token.
- *
- * (Just because it passes an audit doesn't mean
- *  that it is safe. Most times its probably still
- *  a rugpull/honeypot...)
  */
-
 const dodoWebsocket = () => {
+  // Create the websocket server
   const wss = new WebSocket.Server({ port: 8000 });
+
+  // Create a map to store the dodoEggs
   const dodos = new Map();
 
   wss.on("connection", (ws) => {

@@ -1,5 +1,5 @@
 const { Alchemy } = require("alchemy-sdk");
-const getAlchemySettings = require("../../model/utils/getAlchemySettings");
+const getAlchemySettings = require("../../../model/utils/getAlchemySettings");
 
 const personalAudit = async (alchemy, contractAddress) => {};
 
