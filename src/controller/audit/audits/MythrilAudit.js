@@ -2,7 +2,6 @@ const { exec } = require("child_process");
 const util = require("util");
 const execPromise = util.promisify(exec);
 const getInfuraSettings = require("../../utils/getInfuraSettings");
-const { stderr } = require("process");
 
 /**
  * @class MythrilAudit
@@ -25,15 +24,17 @@ class MythrilAudit {
     const data = JSON.parse(stdout);
 
     return {
-      errors: data.errors,
-      issues: data.issues.map((issue) => ({
-        title: issue.title,
-        description: issue.description,
-        severity: issue.severity,
-        function: issue.function,
-      })),
-      success: true,
-      timestamp: new Date().toISOString(),
+      MythrilAudit: {
+        error: data.error,
+        issues: data.issues.map((issue) => ({
+          title: issue.title,
+          description: issue.description,
+          severity: issue.severity,
+          function: issue.function,
+        })),
+        success: true,
+        timestamp: new Date().toISOString(),
+      },
     };
   };
 
@@ -45,7 +46,7 @@ class MythrilAudit {
    */
   proccessAudit = () => {
     // Loop through issues and catch high severity issues
-    for (const issue of this.results.issues) {
+    for (const issue of this.results.MythrilAudit.issues) {
       // Catch high severity issues
       if (issue.severity === "High") {
         // Function name() and symbol() are not issues on Base
@@ -78,12 +79,12 @@ class MythrilAudit {
     this.results = this.formatResults(stdout);
 
     // If the audit was unsuccessful, return false
-    if (!this.results.success) {
+    if (!this.results.MythrilAudit.success) {
       return false;
     }
 
     // If no issues are found, return results, otherwise process them
-    if (this.results.issues.length === 0) {
+    if (this.results.MythrilAudit.issues.length === 0) {
       return this.results;
     } else {
       return this.proccessAudit();

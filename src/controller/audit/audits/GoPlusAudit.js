@@ -37,6 +37,7 @@ class GoPlusAudit {
     const MAX_RETRIES = 5;
     const RETRY_DELAY = 10000; // 10 seconds
     const TIMEOUT = 45;
+    let count = 0;
 
     // Get the token security data
     const fetchData = async () => {
@@ -46,6 +47,20 @@ class GoPlusAudit {
           targetAddress,
           TIMEOUT
         );
+
+        if (response.code === 4029) {
+          console.log("| 51 |GoPlus Rate Limit Reached, waiting 10 seconds...");
+          await new Promise((resolve) => setTimeout(resolve, 10000));
+
+          if (count === 12) {
+            console.log("| 56 |GoPlus Rate Limit Reached 7 times, exiting...");
+            count = 0;
+            return false;
+          } else {
+            count++;
+            return fetchData();
+          }
+        }
 
         return response.result;
       } catch (error) {
@@ -60,17 +75,16 @@ class GoPlusAudit {
         console.log(`Retry attempt: ${retry + 1}/${MAX_RETRIES}`);
 
         const retryData = await fetchData();
-        if (!retryData) {
+        if (retryData === undefined) {
+          if (retry < MAX_RETRIES - 1) {
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+          }
+          continue;
+        } else if (!retryData) {
           return false;
-        }
-
-        if (Object.keys(retryData).length > 0) {
+        } else if (Object.keys(retryData).length > 0) {
           const key = Object.keys(retryData)[0];
           return retryData[key];
-        }
-
-        if (retry < MAX_RETRIES - 1) {
-          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         }
       }
     };
@@ -78,6 +92,17 @@ class GoPlusAudit {
     // Get the token security data
     const response = await fetchData();
 
+    //console.log("|79|GoPlus Response:", response);
+
+    if (!response) {
+      return false;
+    }
+
+    //console.log("GoPlus Response:", response);
+
+    if (response === undefined) {
+      return handleRetry();
+    }
     // If we have valid data, return early otherwise retry
     if (Object.keys(response).length > 0) {
       const key = Object.keys(response)[0];
@@ -96,7 +121,6 @@ class GoPlusAudit {
   async securityCheck(chainId, targetAddress) {
     // Get the security data
     const data = await this.fetchSecurityData(chainId, targetAddress);
-
     // Check if contract is open source first
     if (data.is_open_source !== "1") {
       console.log("Contract is not open source!");

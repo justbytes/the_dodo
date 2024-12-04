@@ -7,7 +7,7 @@ const MythrilAudit = require("./audits/MythrilAudit");
  * @description This class is used to run the audits on the new token
  */
 class Audit {
-  constructor(chainId, newTokenAddress, speed) {
+  constructor(chainId, newTokenAddress) {
     this.chainId = chainId;
     this.newTokenAddress = newTokenAddress;
   }
@@ -30,13 +30,12 @@ class Audit {
       this.chainId,
       this.newTokenAddress
     );
+    console.log("Mythril Results:", mythrilResults);
 
     // If the audit failed, return false
-    if (!mythrilResults.success) {
+    if (!mythrilResults.MythrilAudit.success) {
       return false;
     }
-
-    console.log("| AUDIT RESULTS |\n", { ...goPlusResults, ...mythrilResults });
 
     return { ...goPlusResults, ...mythrilResults };
   }

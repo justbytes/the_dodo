@@ -12,6 +12,7 @@ describe("Audit", () => {
       "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     );
 
+    expect(goPlusResults).not.toBe(false);
     expect(goPlusResults).not.toBeNull();
   });
 
@@ -21,8 +22,8 @@ describe("Audit", () => {
       "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     );
 
-    expect(mythrilResults.success).toBe(true);
-    expect(mythrilResults.issues.length).toBe(0);
+    expect(mythrilResults.MythrilAudit.success).toBe(true);
+    expect(mythrilResults.MythrilAudit.issues.length).toBe(0);
   });
 
   it("Should pass mythril audit with Base USDC", async () => {
@@ -31,8 +32,8 @@ describe("Audit", () => {
       "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"
     );
 
-    expect(mythrilResults.success).toBe(true);
-    expect(mythrilResults.issues.length).toBe(0);
+    expect(mythrilResults.MythrilAudit.success).toBe(true);
+    expect(mythrilResults.MythrilAudit.issues.length).toBe(0);
   });
 
   it("Should pass mythril audit with Base WETH", async () => {
@@ -41,8 +42,8 @@ describe("Audit", () => {
       "0x4200000000000000000000000000000000000006"
     );
 
-    expect(mythrilResults.success).toBe(true);
-    expect(mythrilResults.issues.length).toBe(2);
+    expect(mythrilResults.MythrilAudit.success).toBe(true);
+    expect(mythrilResults.MythrilAudit.issues.length).toBe(2);
   });
 
   it("Should test the Audit class", async () => {
@@ -51,9 +52,7 @@ describe("Audit", () => {
       "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     );
 
-    console.log("Audit Results:", auditResults);
-
-    expect(auditResults).not.toBe(false);
+    expect(auditResults.MythrilAudit.success).toBe(true);
     expect(auditResults).not.toBeNull();
   });
 });
