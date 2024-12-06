@@ -21,8 +21,8 @@ class Audit {
     const goPlusResults = await GoPlusAudit(this.chainId, this.newTokenAddress);
 
     // If the audit failed, return false
-    if (!goPlusResults) {
-      return false;
+    if (!goPlusResults.success) {
+      return { ...goPlusResults };
     }
 
     // Mythril Audit

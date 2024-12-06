@@ -52,17 +52,22 @@ class GoPlusAudit {
           console.log("| 51 |GoPlus Rate Limit Reached, waiting 10 seconds...");
           await new Promise((resolve) => setTimeout(resolve, 10000));
 
+          // Stop after 12 requests
           if (count === 12) {
-            console.log("| 56 |GoPlus Rate Limit Reached 7 times, exiting...");
+            console.log(
+              "Can't get data from GoPlus, exiting...\n To many requests"
+            );
             count = 0;
             return false;
           } else {
             count++;
             return fetchData();
           }
+        } else if (response === undefined) {
+          return handleRetry();
+        } else {
+          return response.result;
         }
-
-        return response.result;
       } catch (error) {
         console.error("GoPlus token security API call failed:", error);
         return false;
@@ -92,17 +97,14 @@ class GoPlusAudit {
     // Get the token security data
     const response = await fetchData();
 
-    //console.log("|79|GoPlus Response:", response);
-
     if (!response) {
-      return false;
+      return {
+        success: false,
+        GoPlusAudit: null,
+        reason: "Could not fetch GoPlus data",
+      };
     }
 
-    //console.log("GoPlus Response:", response);
-
-    if (response === undefined) {
-      return handleRetry();
-    }
     // If we have valid data, return early otherwise retry
     if (Object.keys(response).length > 0) {
       const key = Object.keys(response)[0];
@@ -124,7 +126,11 @@ class GoPlusAudit {
     // Check if contract is open source first
     if (data.is_open_source !== "1") {
       console.log("Contract is not open source!");
-      return false;
+      return {
+        success: false,
+        results: data,
+        reason: "Contract is not open source",
+      };
     }
 
     // Trading Security Checks
@@ -137,13 +143,17 @@ class GoPlusAudit {
 
     if (!isTradingSecure) {
       console.log("Token cannot be freely traded!");
-      return false;
+      return {
+        success: false,
+        results: data,
+        reason: "Token cannot be freely traded",
+      };
     }
 
     // Check if the buy/sell tax is unknown
     if (data.buy_tax === "" || data.sell_tax === "") {
       console.log("Unknown buy or sell tax!");
-      return false;
+      return { success: false, results: data, reason: "Unknown buy/sell tax" };
     }
 
     const buyTax = parseFloat(data.buy_tax);
@@ -153,12 +163,12 @@ class GoPlusAudit {
     if (buyTax <= MAX_TAX && sellTax <= MAX_TAX) {
       console.log("***  Token passes security check!  ***");
 
-      return data;
+      return { success: true, results: data };
     } else {
       console.log(
         `Token buy or sell tax is too high! \nBuy Tax: ${data.buy_tax} Sell Tax: ${data.sell_tax}`
       );
-      return false;
+      return { success: false, results: data, reason: "Buy/Sell tax too high" };
     }
   }
 
@@ -173,14 +183,22 @@ class GoPlusAudit {
     const securityResults = await this.securityCheck(chainId, targetAddress);
 
     // If the audit failed, return false
-    if (!securityResults) {
-      return false;
+    if (!securityResults.success) {
+      return {
+        success: false,
+        GoPlusAudit: securityResults.results,
+        reason: securityResults.reason,
+      };
     }
 
     // Get the malicious results
     const maliciousResults = await this.maliciousCheck(chainId, targetAddress);
 
-    return { GoPlusAudit: { ...securityResults, ...maliciousResults } };
+    return {
+      success: true,
+      ...securityResults,
+      ...maliciousResults,
+    };
   }
 }
 
