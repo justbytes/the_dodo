@@ -24,17 +24,14 @@ class MythrilAudit {
     const data = JSON.parse(stdout);
 
     return {
-      MythrilAudit: {
-        error: data.error,
-        issues: data.issues.map((issue) => ({
-          title: issue.title,
-          description: issue.description,
-          severity: issue.severity,
-          function: issue.function,
-        })),
-        success: true,
-        timestamp: new Date().toISOString(),
-      },
+      error: data.error,
+      issues: data.issues.map((issue) => ({
+        title: issue.title,
+        description: issue.description,
+        severity: issue.severity,
+        function: issue.function,
+      })),
+      success: true,
     };
   };
 

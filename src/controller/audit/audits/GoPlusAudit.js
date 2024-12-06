@@ -49,7 +49,7 @@ class GoPlusAudit {
         );
 
         if (response.code === 4029) {
-          console.log("| 51 |GoPlus Rate Limit Reached, waiting 10 seconds...");
+          console.log("GoPlus Rate Limit Reached, waiting 10 seconds...");
           await new Promise((resolve) => setTimeout(resolve, 10000));
 
           // Stop after 12 requests
@@ -100,8 +100,10 @@ class GoPlusAudit {
     if (!response) {
       return {
         success: false,
-        GoPlusAudit: null,
-        reason: "Could not fetch GoPlus data",
+        results: {
+          securityData: null,
+          reason: "Could not fetch GoPlus data",
+        },
       };
     }
 
@@ -121,20 +123,22 @@ class GoPlusAudit {
    * @returns {object} security data
    */
   async securityCheck(chainId, targetAddress) {
+    // Trading Security Checks
+    const tradingSecurityChecks = ["cannot_buy", "cannot_sell_all"];
+
     // Get the security data
     const data = await this.fetchSecurityData(chainId, targetAddress);
     // Check if contract is open source first
     if (data.is_open_source !== "1") {
-      console.log("Contract is not open source!");
+      // If the contract is not open source, return the data and reason for failure
       return {
         success: false,
-        results: data,
-        reason: "Contract is not open source",
+        results: {
+          securityData: data,
+          reason: "Contract is not open source",
+        },
       };
     }
-
-    // Trading Security Checks
-    const tradingSecurityChecks = ["cannot_buy", "cannot_sell_all"];
 
     // Check if trading is secure
     const isTradingSecure = tradingSecurityChecks.every(
@@ -142,18 +146,26 @@ class GoPlusAudit {
     );
 
     if (!isTradingSecure) {
-      console.log("Token cannot be freely traded!");
+      // If the trading is not secure, return the data and reason for failure
       return {
         success: false,
-        results: data,
-        reason: "Token cannot be freely traded",
+        results: {
+          securityData: data,
+          reason: "Token cannot be freely traded",
+        },
       };
     }
 
     // Check if the buy/sell tax is unknown
     if (data.buy_tax === "" || data.sell_tax === "") {
-      console.log("Unknown buy or sell tax!");
-      return { success: false, results: data, reason: "Unknown buy/sell tax" };
+      // If the buy/sell tax is unknown, return the data and reason for failure
+      return {
+        success: false,
+        results: {
+          securityData: data,
+          reason: "Unknown buy/sell tax",
+        },
+      };
     }
 
     const buyTax = parseFloat(data.buy_tax);
@@ -161,14 +173,17 @@ class GoPlusAudit {
     const MAX_TAX = 0.1;
 
     if (buyTax <= MAX_TAX && sellTax <= MAX_TAX) {
-      console.log("***  Token passes security check!  ***");
-
-      return { success: true, results: data };
+      // If the buy/sell tax is less than the max tax, return the data and success
+      return { success: true, results: { securityData: data } };
     } else {
-      console.log(
-        `Token buy or sell tax is too high! \nBuy Tax: ${data.buy_tax} Sell Tax: ${data.sell_tax}`
-      );
-      return { success: false, results: data, reason: "Buy/Sell tax too high" };
+      // If the buy/sell tax is greater than the max tax, return the data and reason for failure
+      return {
+        success: false,
+        results: {
+          securityData: data,
+          reason: "Buy/Sell tax too high",
+        },
+      };
     }
   }
 
@@ -182,22 +197,13 @@ class GoPlusAudit {
     // Get the security results
     const securityResults = await this.securityCheck(chainId, targetAddress);
 
-    // If the audit failed, return false
-    if (!securityResults.success) {
-      return {
-        success: false,
-        GoPlusAudit: securityResults.results,
-        reason: securityResults.reason,
-      };
-    }
-
     // Get the malicious results
     const maliciousResults = await this.maliciousCheck(chainId, targetAddress);
 
     return {
-      success: true,
-      ...securityResults,
-      ...maliciousResults,
+      success: securityResults.success && maliciousResults.success,
+      securityData: securityResults.results,
+      maliciousData: maliciousResults,
     };
   }
 }

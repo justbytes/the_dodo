@@ -22,7 +22,12 @@ class Audit {
 
     // If the audit failed, return false
     if (!goPlusResults.success) {
-      return { ...goPlusResults };
+      return {
+        success: false,
+        goPlusAudit: goPlusResults,
+        mythrilAudit: null,
+        timestamp: new Date().toISOString(),
+      };
     }
 
     // Mythril Audit
@@ -30,14 +35,23 @@ class Audit {
       this.chainId,
       this.newTokenAddress
     );
-    console.log("Mythril Results:", mythrilResults);
 
     // If the audit failed, return false
-    if (!mythrilResults.MythrilAudit.success) {
-      return false;
+    if (!mythrilResults.success) {
+      return {
+        success: false,
+        goPlusAudit: goPlusResults,
+        mythrilAudit: mythrilResults,
+        timestamp: new Date().toISOString(),
+      };
     }
 
-    return { ...goPlusResults, ...mythrilResults };
+    return {
+      success: goPlusResults.success && mythrilResults.success,
+      goPlusAudit: goPlusResults,
+      mythrilAudit: mythrilResults,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
 
