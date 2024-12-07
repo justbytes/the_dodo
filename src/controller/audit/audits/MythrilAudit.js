@@ -31,7 +31,7 @@ class MythrilAudit {
         severity: issue.severity,
         function: issue.function,
       })),
-      success: true,
+      success: data.success,
     };
   };
 
@@ -43,7 +43,7 @@ class MythrilAudit {
    */
   proccessAudit = () => {
     // Loop through issues and catch high severity issues
-    for (const issue of this.results.MythrilAudit.issues) {
+    for (const issue of this.results.issues) {
       // Catch high severity issues
       if (issue.severity === "High") {
         // Function name() and symbol() are not issues on Base
@@ -60,7 +60,7 @@ class MythrilAudit {
         }
         console.log("High severity issue found");
         // TODO: create a snapshot of the dodo instance and save it for analysis in the future
-        return false;
+        return this.results;
       }
     }
     return this.results;
@@ -76,12 +76,12 @@ class MythrilAudit {
     this.results = this.formatResults(stdout);
 
     // If the audit was unsuccessful, return false
-    if (!this.results.MythrilAudit.success) {
-      return false;
+    if (!this.results.success) {
+      return this.results;
     }
 
     // If no issues are found, return results, otherwise process them
-    if (this.results.MythrilAudit.issues.length === 0) {
+    if (this.results.issues.length === 0) {
       return this.results;
     } else {
       return this.proccessAudit();
@@ -105,7 +105,7 @@ class MythrilAudit {
       // If there is an error, return false
       if (stderr) {
         console.error("| mythrilAudit.js | stderr:", stderr);
-        return false;
+        return stderr;
       }
 
       // Handle the results
@@ -121,7 +121,7 @@ class MythrilAudit {
         error
       );
 
-      return false;
+      return error;
     }
   }
 }

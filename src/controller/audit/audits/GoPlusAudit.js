@@ -174,13 +174,13 @@ class GoPlusAudit {
 
     if (buyTax <= MAX_TAX && sellTax <= MAX_TAX) {
       // If the buy/sell tax is less than the max tax, return the data and success
-      return { success: true, results: { securityData: data } };
+      return { success: true, results: { ...data } };
     } else {
       // If the buy/sell tax is greater than the max tax, return the data and reason for failure
       return {
         success: false,
         results: {
-          securityData: data,
+          securityData: { ...data },
           reason: "Buy/Sell tax too high",
         },
       };
@@ -196,14 +196,15 @@ class GoPlusAudit {
   async main(chainId, targetAddress) {
     // Get the security results
     const securityResults = await this.securityCheck(chainId, targetAddress);
+    console.log(securityResults.success);
 
     // Get the malicious results
     const maliciousResults = await this.maliciousCheck(chainId, targetAddress);
 
     return {
-      success: securityResults.success && maliciousResults.success,
-      securityData: securityResults.results,
-      maliciousData: maliciousResults,
+      success: securityResults.success,
+      securityData: { ...securityResults.results },
+      maliciousData: { ...maliciousResults },
     };
   }
 }

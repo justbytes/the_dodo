@@ -24,7 +24,7 @@ class Audit {
     if (!goPlusResults.success) {
       return {
         success: false,
-        goPlusAudit: goPlusResults,
+        goPlusAudit: { ...goPlusResults },
         mythrilAudit: null,
         timestamp: new Date().toISOString(),
       };
@@ -40,16 +40,17 @@ class Audit {
     if (!mythrilResults.success) {
       return {
         success: false,
-        goPlusAudit: goPlusResults,
-        mythrilAudit: mythrilResults,
+        goPlusAudit: { ...goPlusResults },
+        mythrilAudit: { ...mythrilResults },
         timestamp: new Date().toISOString(),
       };
     }
 
+    // Combine the results
     return {
       success: goPlusResults.success && mythrilResults.success,
-      goPlusAudit: goPlusResults,
-      mythrilAudit: mythrilResults,
+      goPlusAudit: { ...goPlusResults },
+      mythrilAudit: { ...mythrilResults },
       timestamp: new Date().toISOString(),
     };
   }
