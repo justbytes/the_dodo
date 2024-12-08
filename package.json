@@ -25,6 +25,7 @@
     "jest": "^29.7.0"
   },
   "scripts": {
+    "update-tokens": "node src/utils/getTopTokenData.js",
     "test": "jest --watchAll",
     "test:mocha": "mocha"
   },

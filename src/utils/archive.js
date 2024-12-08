@@ -1,27 +1,48 @@
 const fs = require("fs");
 const path = require("path");
 
+const PASSED_AUDIT_JSON = path.join(__dirname, "../../data/passed_audit.json");
+const FAILED_AUDIT_JSON = path.join(__dirname, "../../data/failed_audit.json");
+
 const ACTIVE_DODO_EGGS_JSON = path.join(
   __dirname,
   "../../data/active_dodo_eggs.json"
 );
 
-const saveDodoEggs = (dodoEggData) => {
-  const rawData = fs.readFileSync(ACTIVE_DODO_EGGS_JSON, "utf8");
-  const data = JSON.parse(rawData);
-  console.log(data);
+/**
+ * For pairs that pass the Audit
+ */
+const saveAuditedDodoEgg = async (passed, dodoEgg) => {
+  try {
+    // Read existing data
+    let existingData = [];
+    try {
+      console.log(
+        `Reading from ${passed ? PASSED_AUDIT_JSON : FAILED_AUDIT_JSON}`
+      );
 
-  let dodoEggs = [...data.active_dodo_eggs];
-  // Add the new egg data to the array
-  dodoEggs.push(dodoEggData);
+      const fileContent = fs.readFileSync(
+        passed ? PASSED_AUDIT_JSON : FAILED_AUDIT_JSON,
+        "utf8"
+      );
+      existingData = JSON.parse(fileContent);
+    } catch (error) {
+      // If file doesn't exist or is empty, start with empty array
+      existingData = [];
+    }
 
-  // Convert the updated array back to a JSON string
-  const updatedData = JSON.stringify({ active_dodo_eggs: dodoEggs }, null, 2);
+    // Add new dodoEgg to array
+    existingData.push(dodoEgg);
 
-  // Write the updated data back to the file
-  fs.writeFileSync(ACTIVE_DODO_EGGS_JSON, updatedData);
+    // Write the entire array back to file
+    fs.writeFileSync(
+      passed ? PASSED_AUDIT_JSON : FAILED_AUDIT_JSON,
+      JSON.stringify(existingData, null, 2),
+      "utf8"
+    );
+  } catch (error) {
+    console.error("Error saving to passed_audit.json:", error);
+  }
 };
 
-const loadDodoEggs = () => {};
-
-module.exports = { saveDodoEggs, loadDodoEggs };
+module.exports = { saveAuditedDodoEgg };

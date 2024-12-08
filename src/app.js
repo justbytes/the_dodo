@@ -1,6 +1,7 @@
 const WebSocket = require("ws");
 const { deserializeDodo } = require("./utils/dodoCoder");
 const Audit = require("./controller/audit");
+const { passedAudit, failedAudit } = require("./utils/archive");
 /**
  * Opens a websocket that inspects a new pair for liquidity
  * and "ensures" that there isn't any malisicous code in
@@ -30,19 +31,22 @@ const dodoWebsocket = () => {
       // Do the audit
       const audit = await Audit(dodoEgg.chainId, dodoEgg.newTokenAddress);
 
-      //console.log(audit);
+      // Add the audit results to the DodoEgg object
+      dodoEgg.auditResults = audit;
 
-      if (audit.success) {
-        console.log("Audit was successful");
-        // TODO: Save the pair to the successful pairs file
-        // TODO: Take a snapshot of the blockchain and try to trade the token pair
-      } else {
+      // Save the audit results
+      await saveAuditedDodoEgg(audit.success, dodoEgg);
+
+      // If the audit was not successful, remove the pair from the Map
+      if (!audit.success) {
         console.log("Audit was not successful");
-        // TODO: Remove the pair from the Map
-        // TODO: send to the failed pairs file for further inspection
+        // Remove the pair from the Map
+        dodos.delete(dodoEgg.id);
       }
 
-      // await dodoEgg.setTargetPrice();
+      console.log("Audit was successful");
+
+      // TODO: Take a snapshot of the blockchain and try to trade the token pair
     });
 
     ws.on("close", () => {

@@ -24,20 +24,24 @@
     "name": "Wrapped liquid staked Ether 2.0"
   },
   {
-    "id": "0x956f47f50a910163d8bf957cf5846d573e7f87ca",
-    "name": "Fei USD"
+    "id": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
+    "name": "USDe"
   },
   {
     "id": "0x514910771af9ca656af840dff83e8264ecf986ca",
     "name": "ChainLink Token"
   },
   {
+    "id": "0x956f47f50a910163d8bf957cf5846d573e7f87ca",
+    "name": "Fei USD"
+  },
+  {
     "id": "0x4d224452801aced8b2f0aebe155379bb5d594381",
     "name": "ApeCoin"
   },
   {
-    "id": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
-    "name": "USDe"
+    "id": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
+    "name": "Uniswap"
   },
   {
     "id": "0x2b591e99afe9f32eaa6214f7b7629768c40eeb39",
@@ -48,12 +52,12 @@
     "name": "Wrapped UST Token"
   },
   {
-    "id": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
-    "name": "Uniswap"
-  },
-  {
     "id": "0x853d955acef822db058eb8505911ed77f175b99e",
     "name": "Frax"
+  },
+  {
+    "id": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
+    "name": "Wrapped eETH"
   },
   {
     "id": "0xf4d2888d29d722226fafa5d9b24f9164c092421e",
@@ -66,10 +70,6 @@
   {
     "id": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
     "name": "Matic Token"
-  },
-  {
-    "id": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-    "name": "Wrapped eETH"
   },
   {
     "id": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
@@ -108,6 +108,10 @@
     "name": "ETH 2x Flexible Leverage Index"
   },
   {
+    "id": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
+    "name": "Coinbase Wrapped BTC"
+  },
+  {
     "id": "0x8e870d67f660d95d5be530380d0ec0bd388289e1",
     "name": "Paxos Standard"
   },
@@ -124,16 +128,16 @@
     "name": "Axie Infinity Shard"
   },
   {
+    "id": "0x046eee2cc3188071c02bfc1745a6b17c656e3f3d",
+    "name": "Rollbit Coin"
+  },
+  {
     "id": "0x6123b0049f904d730db3c36a31167d9d4121fa6b",
     "name": "Ribbon"
   },
   {
     "id": "0x4fabb145d64652a948d72533023f6e7a623c7c53",
     "name": "Binance USD"
-  },
-  {
-    "id": "0x046eee2cc3188071c02bfc1745a6b17c656e3f3d",
-    "name": "Rollbit Coin"
   },
   {
     "id": "0x5283d291dbcf85356a21ba090e6db59121208b44",
@@ -144,24 +148,12 @@
     "name": "Metis Token"
   },
   {
+    "id": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
+    "name": "Aave Token"
+  },
+  {
     "id": "0xc581b735a1688071a1746c968e0798d642ede491",
     "name": "Euro Tether"
-  },
-  {
-    "id": "0x15d4c048f83bd7e37d49ea4c83a07267ec4203da",
-    "name": "Gala"
-  },
-  {
-    "id": "0x111111111117dc0aa78b770fa6a738034120c302",
-    "name": "1INCH Token"
-  },
-  {
-    "id": "0xd533a949740bb3306d119cc777fa900ba034cd52",
-    "name": "Curve DAO Token"
-  },
-  {
-    "id": "0x4e15361fd6b4bb609fa63c81a2be19d873717870",
-    "name": "Fantom Token"
   },
   {
     "id": "0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3",
@@ -172,6 +164,30 @@
     "name": "Wrapped TAO"
   },
   {
+    "id": "0xd533a949740bb3306d119cc777fa900ba034cd52",
+    "name": "Curve DAO Token"
+  },
+  {
+    "id": "0x111111111117dc0aa78b770fa6a738034120c302",
+    "name": "1INCH Token"
+  },
+  {
+    "id": "0x57e114b691db790c35207b2e685d4a43181e6061",
+    "name": "ENA"
+  },
+  {
+    "id": "0x15d4c048f83bd7e37d49ea4c83a07267ec4203da",
+    "name": "Gala"
+  },
+  {
+    "id": "0x4e15361fd6b4bb609fa63c81a2be19d873717870",
+    "name": "Fantom Token"
+  },
+  {
+    "id": "0xd31a59c85ae9d8edefec411d448f90841571b89c",
+    "name": "Wrapped SOL (Wormhole)"
+  },
+  {
     "id": "0x03ab458634910aad20ef5f1c8ee96f1d6ac54919",
     "name": "Rai Reflex Index"
   },
@@ -180,36 +196,60 @@
     "name": "Magic Internet Money"
   },
   {
-    "id": "0x57e114b691db790c35207b2e685d4a43181e6061",
-    "name": "ENA"
+    "id": "0xb23d80f5fefcddaa212212f028021b41ded428cf",
+    "name": "Prime"
   },
   {
-    "id": "0x4a220e6096b25eadb88358cb44068a3248254675",
-    "name": "Quant"
+    "id": "0xffffa9353a62ebfd0a652529cd04c09265b4bc8f",
+    "name": "Screenshot_20241030_095958"
   },
   {
-    "id": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
-    "name": "Aave Token"
+    "id": "0xffff2daa67b2f01c6102365b4425dafaa151821b",
+    "name": "You, The Unseen"
   },
   {
-    "id": "0xeb4c2781e4eba804ce9a9803c67d0893436bb27d",
-    "name": "renBTC"
+    "id": "0xfffeed0eb35bd74b86918bcd9584b47a4ee2f810",
+    "name": "Celestial Muse"
   },
   {
-    "id": "0xa693b19d2931d498c5b318df961919bb4aee87a5",
-    "name": "UST (Wormhole)"
+    "id": "0xfffd6f2f0a4d2cf41ed0c886d684432ee1d1fb61",
+    "name": "Aether"
   },
   {
     "id": "0xfffd1d04485df0ee3b96dbfbcc59ea5df491c72c",
     "name": "Serafim"
   },
   {
+    "id": "0xfffc6541d9a96103adf0fb75a62fd2618d48a2e1",
+    "name": "War Dance of Corporations"
+  },
+  {
+    "id": "0xfffc0de9d6c681085968d826337cc817d271823f",
+    "name": "Territories Up"
+  },
+  {
     "id": "0xfffb970e43a599499cf6ebd0a7aded99134bc5eb",
     "name": "WHALE"
   },
   {
+    "id": "0xfffb1009f4333a1a27fb1bdae0ade16344966ad9",
+    "name": "WOW"
+  },
+  {
     "id": "0xfffa2ada5842584cbc530d35730090fd039e6f57",
     "name": "Slimecard152"
+  },
+  {
+    "id": "0xfff9113f648dda3dee52410267cab6e559a860f3",
+    "name": "Bull Express"
+  },
+  {
+    "id": "0xfff8bf5fa1ebff3558ed14d31f423599008cedbe",
+    "name": "Base_Mood"
+  },
+  {
+    "id": "0xfff88de0a92dbfac7aec378b2835f696e33f0f60",
+    "name": "Febby"
   },
   {
     "id": "0xfff741c4100ffee4c8f87e5394fabb8191f63bbe",
@@ -224,8 +264,28 @@
     "name": "Keeping Status"
   },
   {
+    "id": "0xfff5250f72bfcd945c5c4ca2a334c5dbdbaf091d",
+    "name": "Boxingmeme"
+  },
+  {
+    "id": "0xfff4880b0aa2f8ef499a9fed0f3eefe77200b919",
+    "name": "btc3"
+  },
+  {
+    "id": "0xfff469d073c2755153f00c059d3087c28de275ae",
+    "name": "X"
+  },
+  {
+    "id": "0xfff46364bd829e53e285e8877a8274bb307e1a5d",
+    "name": "Azur"
+  },
+  {
     "id": "0xfff446bdc4f3be8c68ec14f4da286a1aa23ef894",
     "name": "Betty"
+  },
+  {
+    "id": "0xfff3f5dff374f9a1bae2b3bdb905f2ae34ec68d3",
+    "name": "JARJIT SINGH"
   },
   {
     "id": "0xfff3dfa97bdf065724968a6f9b096131893fb2f5",
@@ -236,8 +296,16 @@
     "name": "Jumper "
   },
   {
+    "id": "0xfff0c7f2e0df9e3b5d9e4bbd1fd23104e669eaaa",
+    "name": "Telegram"
+  },
+  {
     "id": "0xffeffc708f5e2defc9ff23d6e51849a0373463b3",
     "name": "Long way"
+  },
+  {
+    "id": "0xffefc9211c60b4985773603236e476823947ed1b",
+    "name": "Mobile Dream Launchpad"
   },
   {
     "id": "0xffef677d6086251ba8caad09b46559eb585a1c0b",
@@ -246,6 +314,22 @@
   {
     "id": "0xffef442a27babd2ba8c8bbd267a565b5662c8821",
     "name": "Wrapped BRETT"
+  },
+  {
+    "id": "0xffee1814cae009873e70fe4d68e0fe397b78e1da",
+    "name": "BURNS"
+  },
+  {
+    "id": "0xffedaf8582dcb29f3c307737a8693b6f723139bc",
+    "name": "SPAM3"
+  },
+  {
+    "id": "0xffed7086125416fd92de006ac7da6b1245919786",
+    "name": "based grandma"
+  },
+  {
+    "id": "0xffeca178459d63275b433c2c5fb5a2ac73681a2b",
+    "name": "Astral Arrows"
   },
   {
     "id": "0xffeb9abd08f37942962ed3a553616605283d1026",
@@ -268,6 +352,10 @@
     "name": "Brisbane Kits"
   },
   {
+    "id": "0xffe95063094c18225c454e7f90e9342b9b1cabad",
+    "name": "Setter"
+  },
+  {
     "id": "0xffe739d06ffb8733cf81bc5b6342ca32c2292b9d",
     "name": "🎁Gif"
   },
@@ -284,6 +372,22 @@
     "name": "Out Instrumentation"
   },
   {
+    "id": "0xffe496a5d03ffb772b4b856c9036f8d7f3ea88d3",
+    "name": "w0rm"
+  },
+  {
+    "id": "0xffe4897680970a04cb74264f24aecbda32990c4b",
+    "name": "Punks"
+  },
+  {
+    "id": "0xffe44e314816455d5536217062161f9254a27fa2",
+    "name": "TOSHI"
+  },
+  {
+    "id": "0xffe3883ee164c47d41ffd5280fc7b9a0aab9a29b",
+    "name": "#160 - The Volcano"
+  },
+  {
     "id": "0xffe37353b5c8dee52ceaa39b8aab645bb9b24e88",
     "name": "Fall in New Hampshire 01"
   },
@@ -294,109 +398,5 @@
   {
     "id": "0xffe2f4f725872e808ae65ebcd2e3898b054dcb20",
     "name": "Hunter Dog"
-  },
-  {
-    "id": "0xffe21c440027a3d783468faa14c0fbc19882a83c",
-    "name": "Located"
-  },
-  {
-    "id": "0xffe1e3100102cfdd95953c04e0421604a8bc5902",
-    "name": "Music Alter"
-  },
-  {
-    "id": "0xffe0c785858a63e79634ba0d2ca584d1989d6b22",
-    "name": "Radiance"
-  },
-  {
-    "id": "0xffdfe7e0a52475dd74d7161f2a4aa30992ce5977",
-    "name": "Cozy Corner 🇳🇱"
-  },
-  {
-    "id": "0xffdfcfc0e57b715ad5ce11e8e0e63219e424c787",
-    "name": "BAZORB"
-  },
-  {
-    "id": "0xffdea5c970cbe2ee42a88d8d977ce76d0cb1044b",
-    "name": "Rid Symposium"
-  },
-  {
-    "id": "0xffdcc46161ebb8289fddec7f3dd6810d37b51596",
-    "name": "Toe Spacer"
-  },
-  {
-    "id": "0xffda0f4f28a31bfa5995d5f62bc61c5a1eb65f02",
-    "name": "BIGBENWIF"
-  },
-  {
-    "id": "0xffd999669846def6b8b92efc6ffa36bc8a55001a",
-    "name": "bungalows-facing-mont"
-  },
-  {
-    "id": "0xffd7fd31a8cf977a313e3221d26aac626efa5cf7",
-    "name": "ECO Girl ERC20"
-  },
-  {
-    "id": "0xffd7c2b5a8e6456ed6bdd9df3ed9ef428b853ebe",
-    "name": "Computed"
-  },
-  {
-    "id": "0xffd6304aa94ea6de1bd5513f80d357a7277d93dc",
-    "name": "Coinbase Dog"
-  },
-  {
-    "id": "0xffd56fe94177e30f443d5942e605ebe8cf7f4c67",
-    "name": "rather"
-  },
-  {
-    "id": "0xffd392a050714e657ddcc81a15e41db71d98f292",
-    "name": "Magic Mushroom Meme Coin"
-  },
-  {
-    "id": "0xffd2fe5a39483312e7fd699d69194588e5823445",
-    "name": "UwU"
-  },
-  {
-    "id": "0xffd251cd4c788c8cae0670e4a6b9af5aeff51251",
-    "name": "agatasasinowska_a_rushing_black_horse_rearing_on_a_white_backgr_245f9fb6-49c8-4faa-9884-c82ad6845b73"
-  },
-  {
-    "id": "0xffd1ad4c9fcd426b74e31114c462b7887737f462",
-    "name": "Popo On Base"
-  },
-  {
-    "id": "0xffd13170a0e8f107d6322c3603adc8adb9ecf1fd",
-    "name": "Donors Said"
-  },
-  {
-    "id": "0xffd0a82b856f1eaa3654c29fe93b90f733dd7345",
-    "name": "apartments"
-  },
-  {
-    "id": "0xffcfce1425ee8ce5a81b92aec001b05ba3f83b59",
-    "name": "firework..."
-  },
-  {
-    "id": "0xffcfbc569718ca616c7f591164fb2089c53d0158",
-    "name": "altered"
-  },
-  {
-    "id": "0xffce6991042304c063ff32f682ac59e1562efde0",
-    "name": "Crazy Cat 🐱"
-  },
-  {
-    "id": "0xffcdcf4bb95534680b784ed40d3f735348e98b89",
-    "name": "Var"
-  },
-  {
-    "id": "0xffcd5b7d71f1e079cd77b32749bb4d1d6c795521",
-    "name": "angela"
-  },
-  {
-    "id": "0xffcbf84650ce02dafe96926b37a0ac5e34932fa5",
-    "name": "XEN Crypto"
-  },
-  {
-    "id": "0xffca0963a9af2e71bc5dd79792e5fd56e0dce6e0",
-    "name": "hands"
   }
 ]
