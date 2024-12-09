@@ -34,7 +34,7 @@ class GoPlusAudit {
    * @returns {object} security data
    */
   async fetchSecurityData(chainId, targetAddress) {
-    const MAX_RETRIES = 5;
+    const MAX_RETRIES = 12;
     const RETRY_DELAY = 10000; // 10 seconds
     const TIMEOUT = 45;
     let count = 0;
@@ -77,11 +77,9 @@ class GoPlusAudit {
     // Retry logic in case the data is empty
     const handleRetry = async () => {
       for (let retry = 0; retry < MAX_RETRIES; retry++) {
-        console.log(`Retry attempt: ${retry + 1}/${MAX_RETRIES}`);
-
         const retryData = await fetchData();
         if (retryData === undefined) {
-          if (retry < MAX_RETRIES - 1) {
+          if (retry == MAX_RETRIES) {
             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
           }
           continue;

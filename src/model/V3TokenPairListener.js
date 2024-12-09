@@ -13,6 +13,11 @@ const {
 const FACTORY_V3_INTERFACE = new ethers.Interface(UniswapV3FactoryABI);
 
 class V3TokenPairListener {
+  /**
+   *
+   * @param {string} factoryAddress
+   * @param {number} chainId
+   */
   constructor(factoryAddress, chainId) {
     this.factoryAddress = factoryAddress;
     this.chainId = chainId;
@@ -63,10 +68,21 @@ class V3TokenPairListener {
     );
     console.log("");
 
+    let data;
+
     // New token checking logic
-    if (checkIfTokenIsNew(token0)) {
+    if (!checkIfTokenIsNew(token0)) {
       // Create a data object
-      const data = {
+      data = {
+        chainId: this.chainId,
+        newTokenAddress: token1,
+        baseTokenAddress: token0,
+        pairAddress: pool,
+        v3: true,
+        fee: fee,
+      };
+    } else {
+      data = {
         chainId: this.chainId,
         newTokenAddress: token0,
         baseTokenAddress: token1,
@@ -74,36 +90,13 @@ class V3TokenPairListener {
         v3: true,
         fee: fee,
       };
-
-      // Send it to the app
-      app.send(this.bigIntSafeSerialize(data));
-
-      console.log(`Data sent to server`);
-      console.log("");
-    } else {
-      // Check if the second token is new
-      if (checkIfTokenIsNew(token1)) {
-        // Create a data object
-        const data = {
-          chainId: this.chainId,
-          newTokenAddress: token1,
-          baseTokenAddress: token0,
-          pairAddress: pool,
-          v3: true,
-          fee: fee,
-        };
-
-        // Send it to the app
-        app.send(this.bigIntSafeSerialize(data));
-
-        console.log(`Data sent to server`);
-        console.log("");
-      } else {
-        console.log("These are two already known tokens...");
-        console.log(token0 + "/" + token1);
-        console.log("");
-      }
     }
+
+    // Send it to the app
+    app.send(this.bigIntSafeSerialize(data));
+
+    console.log(`Data sent to server`);
+    console.log("");
   }
 
   // Utility function for BigInt-safe serialization

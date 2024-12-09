@@ -1,7 +1,7 @@
 const WebSocket = require("ws");
 const { deserializeDodo } = require("./utils/dodoCoder");
 const Audit = require("./controller/audit");
-const { passedAudit, failedAudit } = require("./utils/archive");
+const { saveAuditedDodoEgg } = require("./utils/archive");
 /**
  * Opens a websocket that inspects a new pair for liquidity
  * and "ensures" that there isn't any malisicous code in
@@ -35,13 +35,14 @@ const dodoWebsocket = () => {
       dodoEgg.auditResults = audit;
 
       // Save the audit results
-      await saveAuditedDodoEgg(audit.success, dodoEgg);
+      await saveAuditedDodoEgg(audit.success, dodoEgg.getDodoEgg());
 
       // If the audit was not successful, remove the pair from the Map
       if (!audit.success) {
         console.log("Audit was not successful");
         // Remove the pair from the Map
         dodos.delete(dodoEgg.id);
+        return;
       }
 
       console.log("Audit was successful");
