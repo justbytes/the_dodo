@@ -13,6 +13,7 @@ const dodoWebsocket = () => {
 
   // Create a map to store the dodoEggs
   const dodos = new Map();
+  const audit = new Audit();
 
   wss.on("connection", (ws) => {
     console.log(`     New connection to app.js     `);
@@ -29,16 +30,19 @@ const dodoWebsocket = () => {
       dodos.set(dodoEgg.id, dodoEgg);
 
       // Do the audit
-      const audit = await Audit(dodoEgg.chainId, dodoEgg.newTokenAddress);
+      const auditResults = await audit.main(
+        dodoEgg.chainId,
+        dodoEgg.newTokenAddress
+      );
 
       // Add the audit results to the DodoEgg object
-      dodoEgg.auditResults = audit;
+      dodoEgg.auditResults = auditResults;
 
       // Save the audit results
-      await saveAuditedDodoEgg(audit.success, dodoEgg.getDodoEgg());
+      await saveAuditedDodoEgg(auditResults.success, dodoEgg.getDodoEgg());
 
       // If the audit was not successful, remove the pair from the Map
-      if (!audit.success) {
+      if (!auditResults.success) {
         console.log("Audit was not successful");
         // Remove the pair from the Map
         dodos.delete(dodoEgg.id);

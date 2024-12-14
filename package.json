@@ -27,7 +27,7 @@
   "scripts": {
     "start": "node src/index.js",
     "update-tokens": "node src/utils/getTopTokenData.js",
-    "test": "jest --watchAll",
+    "test": "jest",
     "test:mocha": "mocha"
   },
   "keywords": [],

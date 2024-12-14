@@ -17,10 +17,6 @@ const saveAuditedDodoEgg = async (passed, dodoEgg) => {
     // Read existing data
     let existingData = [];
     try {
-      console.log(
-        `Reading from ${passed ? PASSED_AUDIT_JSON : FAILED_AUDIT_JSON}`
-      );
-
       const fileContent = fs.readFileSync(
         passed ? PASSED_AUDIT_JSON : FAILED_AUDIT_JSON,
         "utf8"
