@@ -15,6 +15,7 @@ class GoPlusAudit {
 
     // Runs the GoPlus audit every 60 seconds
     setInterval(async () => {
+      console.log("*******   CHECKING GOPLUS AUDIT QUEUE   *******");
       // Allow for 30 more GoPlusAudits to be called
       this.counter = 0;
 
@@ -85,62 +86,57 @@ class GoPlusAudit {
     const TIMEOUT = 45;
     let retryCount = 0;
 
-    // Get the token security data
+    // A recursive function to fetch the security data
     const fetchData = async () => {
       let response;
       // Wait for the counter to be less than 30
       while (this.counter >= 30) {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
+        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
-      // Get the token security data
+      // Make the GoPlus API call
       try {
-        // GoPlus token security API call
         response = await GoPlus.tokenSecurity(chainId, targetAddress, TIMEOUT);
-
-        // Increment the number of audits calls
         this.counter++;
       } catch (error) {
         console.error("GoPlus token security API call failed:", error);
         return false;
       }
 
-      // Check if the response is a rate limit error
+      // Handle rate limit error
       if (response.code === 4029) {
         console.log("GoPlus Rate Limit Reached, waiting 10 seconds...");
-
-        // Wait for 10 seconds
-        await new Promise((resolve) => setTimeout(resolve, 10000));
-
-        // Increment the retry count
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         retryCount++;
-
-        // Retry the fetchData
-        return fetchData();
-      } else if (response === undefined) {
-        console.log("Goplus Data is undefined waiting 5 seconds...");
-
-        // Wait for 5 seconds
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        // Increment the retry count
-        retryCount++;
-
-        // Retry the fetchData
         return fetchData();
       }
 
-      // If the retry count is greater than the max retries, return false
-      if (retryCount === MAX_RETRIES) {
+      // Handle invalid or empty response
+      if (
+        !response ||
+        response === undefined ||
+        Object.keys(response).length === 0
+      ) {
+        console.log("GoPlus Data is invalid or empty, retrying...");
+        await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+        retryCount++;
+        return fetchData();
+      }
+
+      // Check max retries
+      if (retryCount >= MAX_RETRIES) {
         console.log("Max retries reached, unable to fetch data from GoPlus");
         return false;
       }
 
-      return response.result;
+      // Return the first key's value from the response
+      return response.result[Object.keys(response.result)[0]];
     };
-    // Get the token security data
+
+    // Get the security data
     const response = await fetchData();
 
+    // If the response is false, return the failure
     if (!response) {
       return {
         success: false,
@@ -151,13 +147,7 @@ class GoPlusAudit {
       };
     }
 
-    // If we have valid data, return early otherwise retry
-    if (Object.keys(response).length > 0) {
-      const key = Object.keys(response)[0];
-      return response[key];
-    } else {
-      return handleRetry();
-    }
+    return response;
   }
 
   /**
@@ -239,7 +229,7 @@ class GoPlusAudit {
    */
   async main(chainId, newTokenAddress) {
     // Check if the newTokenAddress is already in the queue
-    const recorded = this.goPlusAuditsQueue.some(
+    const recorded = this.queue.some(
       (queueItem) => queueItem.newTokenAddress === newTokenAddress
     );
 
@@ -251,7 +241,7 @@ class GoPlusAudit {
       }
 
       // Token is not in queue, add it
-      this.goPlusAuditsQueue.push({ chainId, newTokenAddress });
+      this.queue.push({ chainId, newTokenAddress });
       return;
     }
 
@@ -283,5 +273,4 @@ class GoPlusAudit {
 }
 
 // Export a factory function that creates a new instance
-module.exports = (chainId, targetAddress) =>
-  new GoPlusAudit().main(chainId, targetAddress);
+module.exports = GoPlusAudit;

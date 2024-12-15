@@ -14,7 +14,7 @@ const UNISWAP = JSON.parse(rawUniswapData);
  */
 const main = async () => {
   // Start websocket server
-  const app = App();
+  const app = new App();
 
   // Loop through each Uniswap protocol and activate listeners
   for (let i = 0; i < UNISWAP.length; i++) {
@@ -26,7 +26,7 @@ const main = async () => {
     // Start V2 listener
     try {
       if (v2Factory != null) {
-        new V2TokenPairListener(v2Factory, chainId);
+        new V2TokenPairListener(app, v2Factory, chainId);
       }
     } catch (error) {
       console.error(
@@ -38,7 +38,7 @@ const main = async () => {
     // Start V3 listener
     try {
       if (v3Factory != null) {
-        new V3TokenPairListener(v3Factory, chainId);
+        new V3TokenPairListener(app, v3Factory, chainId);
       }
     } catch (error) {
       console.error(

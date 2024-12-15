@@ -15,6 +15,9 @@ class Audit {
 
     // Checks the queue to see if we can run an audit every 90 seconds
     setInterval(async () => {
+      console.log("*******   CHECKING MYTHRIL AUDIT QUEUE   *******");
+      console.log("");
+
       // If there are audits in the queue, run them
       if (this.mythrilAuditsQueue.length > 0 && this.mythrilInstances < 4) {
         // Get the number of audits to run
@@ -82,7 +85,7 @@ class Audit {
    * Runs the audits
    * @returns
    */
-  async main(chainId, newTokenAddress) {
+  async run(chainId, newTokenAddress) {
     // GoPlus Audit
     const goPlusResults = await this.goPlusAudit.main(chainId, newTokenAddress);
 

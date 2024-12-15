@@ -12,7 +12,7 @@ const ACTIVE_DODO_EGGS_JSON = path.join(
 /**
  * For pairs that pass the Audit
  */
-const saveAuditedDodoEgg = async (passed, dodoEgg) => {
+const saveAuditedDodoEgg = (passed, dodoEgg) => {
   try {
     // Read existing data
     let existingData = [];

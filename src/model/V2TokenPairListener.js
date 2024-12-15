@@ -1,7 +1,5 @@
 const { ethers } = require("ethers");
 const { Alchemy, Interface } = require("alchemy-sdk");
-const WebSocket = require("ws");
-const app = new WebSocket("ws://127.0.0.1:8000");
 const getAlchemySettings = require("./utils/getAlchemySettings");
 const checkIfTokenIsNew = require("./utils/newTokenChecker");
 
@@ -19,7 +17,9 @@ class V2TokenPairListener {
    * @param {number} chainId
    */
 
-  constructor(factoryAddress, chainId) {
+  constructor(app, factoryAddress, chainId) {
+    this.totalSent = 0;
+    this.app = app;
     this.factoryAddress = factoryAddress;
     this.chainId = chainId;
     this.provider = new Alchemy(getAlchemySettings(chainId));
@@ -38,7 +38,9 @@ class V2TokenPairListener {
 
     this.provider.ws.on(filter, (log) => {
       console.log("New PairCreated event detected!");
-      this.processEventLog(log);
+      this.processEventLog(log).catch((err) => {
+        console.log("Error processing event log", err);
+      });
     });
   }
 
@@ -46,7 +48,7 @@ class V2TokenPairListener {
    * Decoded V2 log data
    * @param {string} log encoded event data
    */
-  processEventLog(log) {
+  async processEventLog(log) {
     // Decode the log
     const decodedLog = FACTORY_V2_INTERFACE.parseLog(log);
 
@@ -90,9 +92,12 @@ class V2TokenPairListener {
     }
 
     // Send it to the app
-    app.send(this.bigIntSafeSerialize(data));
+    await this.app.auditDodo(this.bigIntSafeSerialize(data));
 
-    console.log(`Data sent to server`);
+    // Increment the total sent
+    this.totalSent++;
+
+    console.log(`Data sent to app. Total V2 Sent: ${this.totalSent}`);
     console.log("");
   }
 
