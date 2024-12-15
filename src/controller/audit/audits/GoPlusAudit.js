@@ -6,16 +6,62 @@ const { GoPlus } = require("@goplus/sdk-node");
  */
 class GoPlusAudit {
   /**
+   * @constructor
+   * @description This constructor is used to initialize the GoPlusAudit class
+   */
+  constructor() {
+    this.counter = 0;
+    this.queue = [];
+
+    // Runs the GoPlus audit every 60 seconds
+    setInterval(async () => {
+      // Allow for 30 more GoPlusAudits to be called
+      this.counter = 0;
+
+      // Storage var for the number of audits to run
+      let auditsToRun = 0;
+
+      // Get the number of audits to run
+      if (this.queue.length === 0) {
+        return;
+      } else if (this.queue.length > 30) {
+        auditsToRun = 30;
+      } else {
+        auditsToRun = 30 - this.queue.length;
+      }
+
+      // Run the audits
+      for (let i = 0; i < auditsToRun; i++) {
+        // Get the audit from the queue
+        const { chainId, newTokenAddress } = this.queue[i];
+
+        // Run the audit
+        this.goPlusAudit(chainId, newTokenAddress);
+
+        // Wait for 1 second before running the next audit
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }, 60000); // 60 seconds
+  }
+
+  /**
    * Checks if the address is malicious
    * @param {string} chainId
    * @param {string} targetAddress
    * @returns {object} malicious results
    */
   async maliciousCheck(chainId, targetAddress) {
+    // Wait for 1 second if counter is greater than 30
+    while (this.counter >= 30) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
     try {
       // Get the address security data
       const response = await GoPlus.addressSecurity(chainId, targetAddress);
 
+      // Increment the number of audits calls
+      this.counter++;
       return response.result;
     } catch (error) {
       console.log(
@@ -37,61 +83,61 @@ class GoPlusAudit {
     const MAX_RETRIES = 12;
     const RETRY_DELAY = 10000; // 10 seconds
     const TIMEOUT = 45;
-    let count = 0;
+    let retryCount = 0;
 
     // Get the token security data
     const fetchData = async () => {
+      let response;
+      // Wait for the counter to be less than 30
+      while (this.counter >= 30) {
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second
+      }
+
+      // Get the token security data
       try {
-        const response = await GoPlus.tokenSecurity(
-          chainId,
-          targetAddress,
-          TIMEOUT
-        );
+        // GoPlus token security API call
+        response = await GoPlus.tokenSecurity(chainId, targetAddress, TIMEOUT);
 
-        if (response.code === 4029) {
-          console.log("GoPlus Rate Limit Reached, waiting 10 seconds...");
-          await new Promise((resolve) => setTimeout(resolve, 10000));
-
-          // Stop after 12 requests
-          if (count === 12) {
-            console.log(
-              "Can't get data from GoPlus, exiting...\n To many requests"
-            );
-            count = 0;
-            return false;
-          } else {
-            count++;
-            return fetchData();
-          }
-        } else if (response === undefined) {
-          return handleRetry();
-        } else {
-          return response.result;
-        }
+        // Increment the number of audits calls
+        this.counter++;
       } catch (error) {
         console.error("GoPlus token security API call failed:", error);
         return false;
       }
-    };
 
-    // Retry logic in case the data is empty
-    const handleRetry = async () => {
-      for (let retry = 0; retry < MAX_RETRIES; retry++) {
-        const retryData = await fetchData();
-        if (retryData === undefined) {
-          if (retry == MAX_RETRIES) {
-            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-          }
-          continue;
-        } else if (!retryData) {
-          return false;
-        } else if (Object.keys(retryData).length > 0) {
-          const key = Object.keys(retryData)[0];
-          return retryData[key];
-        }
+      // Check if the response is a rate limit error
+      if (response.code === 4029) {
+        console.log("GoPlus Rate Limit Reached, waiting 10 seconds...");
+
+        // Wait for 10 seconds
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+
+        // Increment the retry count
+        retryCount++;
+
+        // Retry the fetchData
+        return fetchData();
+      } else if (response === undefined) {
+        console.log("Goplus Data is undefined waiting 5 seconds...");
+
+        // Wait for 5 seconds
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        // Increment the retry count
+        retryCount++;
+
+        // Retry the fetchData
+        return fetchData();
       }
-    };
 
+      // If the retry count is greater than the max retries, return false
+      if (retryCount === MAX_RETRIES) {
+        console.log("Max retries reached, unable to fetch data from GoPlus");
+        return false;
+      }
+
+      return response.result;
+    };
     // Get the token security data
     const response = await fetchData();
 
@@ -188,16 +234,45 @@ class GoPlusAudit {
   /**
    * Runs the GoPlus audit
    * @param {string} chainId
-   * @param {string} targetAddress
+   * @param {string} newTokenAddress
    * @returns {object} audit results
    */
-  async main(chainId, targetAddress) {
+  async main(chainId, newTokenAddress) {
+    // Check if the newTokenAddress is already in the queue
+    const recorded = this.goPlusAuditsQueue.some(
+      (queueItem) => queueItem.newTokenAddress === newTokenAddress
+    );
+
+    // If there are 30 audits called within the minute, add the new audit to the queue
+    if (this.goPlusAuditsActive >= 30) {
+      // If the newTokenAddress is already in the queue, return
+      if (recorded) {
+        return;
+      }
+
+      // Token is not in queue, add it
+      this.goPlusAuditsQueue.push({ chainId, newTokenAddress });
+      return;
+    }
+
     // Get the security results
-    const securityResults = await this.securityCheck(chainId, targetAddress);
-    console.log(securityResults.success);
+    const securityResults = await this.securityCheck(chainId, newTokenAddress);
 
     // Get the malicious results
-    const maliciousResults = await this.maliciousCheck(chainId, targetAddress);
+    const maliciousResults = await this.maliciousCheck(
+      chainId,
+      newTokenAddress
+    );
+
+    // Remove the audit from the queue if it was recorded
+    if (recorded) {
+      this.queue = this.queue.filter(
+        (item) =>
+          !(
+            item.chainId === chainId && item.newTokenAddress === newTokenAddress
+          )
+      );
+    }
 
     return {
       success: securityResults.success,

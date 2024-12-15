@@ -2,6 +2,12 @@ const WebSocket = require("ws");
 const { deserializeDodo } = require("./utils/dodoCoder");
 const Audit = require("./controller/audit");
 const { saveAuditedDodoEgg } = require("./utils/archive");
+
+class App {
+  constructor() {
+    this.pairs = new Map();
+  }
+}
 /**
  * Opens a websocket that inspects a new pair for liquidity
  * and "ensures" that there isn't any malisicous code in

@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const dodoWebsocket = require("./app");
+const App = require("./app");
 const V2TokenPairListener = require("./model/V2TokenPairListener");
 const V3TokenPairListener = require("./model/V3TokenPairListener");
 
@@ -14,7 +14,7 @@ const UNISWAP = JSON.parse(rawUniswapData);
  */
 const main = async () => {
   // Start websocket server
-  const wss = dodoWebsocket();
+  const app = App();
 
   // Loop through each Uniswap protocol and activate listeners
   for (let i = 0; i < UNISWAP.length; i++) {

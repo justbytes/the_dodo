@@ -8,18 +8,29 @@ const MythrilAudit = require("./audits/MythrilAudit");
  */
 class Audit {
   constructor() {
-    this.mythrilAuditsActive = 0;
+    this.mythrilInstances = 0;
     this.mythrilAuditsQueue = [];
 
-    // Run the Mythril audits every 5 seconds
-    setInterval(() => {
+    this.goPlusAudit = new GoPlusAudit();
+
+    // Checks the queue to see if we can run an audit every 90 seconds
+    setInterval(async () => {
       // If there are audits in the queue, run them
-      if (this.mythrilAuditsQueue.length > 0) {
-        this.mythrilAuditsQueue.forEach(({ chainId, newTokenAddress }) => {
+      if (this.mythrilAuditsQueue.length > 0 && this.mythrilInstances < 4) {
+        // Get the number of audits to run
+        const auditsToRun = 4 - this.mythrilInstances;
+
+        // Run the audits
+        for (let i = 0; i < auditsToRun; i++) {
+          // Get the audit from the queue
+          const { chainId, newTokenAddress } = this.mythrilAuditsQueue[i];
+
+          // Run the audit
           this.mythrilAudit(chainId, newTokenAddress);
-        });
+          await new Promise((resolve) => setTimeout(resolve, 1000));
+        }
       }
-    }, 5000); // 5 seconds
+    }, 90000); // 90 seconds
   }
 
   /**
@@ -29,16 +40,15 @@ class Audit {
    * @returns
    */
   async mythrilAudit(chainId, newTokenAddress) {
+    // Check if the newTokenAddress is already in the queue
+    const recorded = this.mythrilAuditsQueue.some(
+      (queueItem) => queueItem.newTokenAddress === newTokenAddress
+    );
     // If there are 4 audits running add the new audit to the queue
-    if (this.mythrilAuditsActive >= 4) {
-      // Check if the newTokenAddress is already in the queue
-      const recorded = this.mythrilAuditsQueue.some(
-        (queueItem) => queueItem.newTokenAddress === newTokenAddress
-      );
-
+    if (this.mythrilInstances >= 4) {
       // If the newTokenAddress is already in the queue, return
       if (recorded) {
-        return; // Token is already in queue
+        return;
       }
 
       // Token is not in queue, add it
@@ -47,13 +57,23 @@ class Audit {
     }
 
     // Start the Mythril audit
-    this.mythrilAuditsActive++;
+    this.mythrilInstances++;
 
     // Run the Mythril audit
     const mythrilResults = await MythrilAudit(chainId, newTokenAddress);
 
+    // Remove the audit from the queue if it was recorded
+    if (recorded) {
+      this.mythrilAuditsQueue = this.mythrilAuditsQueue.filter(
+        (item) =>
+          !(
+            item.chainId === chainId && item.newTokenAddress === newTokenAddress
+          )
+      );
+    }
+
     // Decrement the number of active audits
-    this.mythrilAuditsActive--;
+    this.mythrilInstances--;
 
     return mythrilResults;
   }
@@ -64,7 +84,7 @@ class Audit {
    */
   async main(chainId, newTokenAddress) {
     // GoPlus Audit
-    const goPlusResults = await GoPlusAudit(chainId, newTokenAddress);
+    const goPlusResults = await this.goPlusAudit.main(chainId, newTokenAddress);
 
     // If the audit failed, return false
     if (!goPlusResults.success) {
