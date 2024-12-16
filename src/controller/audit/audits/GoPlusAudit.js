@@ -12,9 +12,19 @@ class GoPlusAudit {
   constructor() {
     this.counter = 0;
     this.queue = [];
+    this.intervalId = null;
+  }
 
-    // Runs the GoPlus audit every 60 seconds
-    setInterval(async () => {
+  /**
+   * Starts the GoPlus audit queue processing
+   */
+  startAuditQueue() {
+    if (this.intervalId) {
+      console.log("Audit queue is already running");
+      return;
+    }
+
+    this.intervalId = setInterval(async () => {
       console.log("*******   CHECKING GOPLUS AUDIT QUEUE   *******");
       // Allow for 30 more GoPlusAudits to be called
       this.counter = 0;
@@ -43,6 +53,17 @@ class GoPlusAudit {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }, 60000); // 60 seconds
+  }
+
+  /**
+   * Stops the GoPlus audit queue processing
+   */
+  stopAuditQueue() {
+    if (this.intervalId) {
+      clearInterval(this.intervalId);
+      this.intervalId = null;
+      console.log("Audit queue processing stopped");
+    }
   }
 
   /**
@@ -105,19 +126,24 @@ class GoPlusAudit {
 
       // Handle rate limit error
       if (response.code === 4029) {
-        console.log("GoPlus Rate Limit Reached, waiting 10 seconds...");
+        console.log(
+          "GoPlus Rate Limit Reached. Retries left: ",
+          MAX_RETRIES - retryCount
+        );
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         retryCount++;
         return fetchData();
       }
-
       // Handle invalid or empty response
-      if (
+      else if (
         !response ||
         response === undefined ||
         Object.keys(response).length === 0
       ) {
-        console.log("GoPlus Data is invalid or empty, retrying...");
+        console.log(
+          "GoPlus Data is invalid or empty. Retries left: ",
+          MAX_RETRIES - retryCount
+        );
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         retryCount++;
         return fetchData();
@@ -162,6 +188,7 @@ class GoPlusAudit {
 
     // Get the security data
     const data = await this.fetchSecurityData(chainId, targetAddress);
+
     // Check if contract is open source first
     if (data.is_open_source !== "1") {
       // If the contract is not open source, return the data and reason for failure
@@ -204,7 +231,7 @@ class GoPlusAudit {
 
     const buyTax = parseFloat(data.buy_tax);
     const sellTax = parseFloat(data.sell_tax);
-    const MAX_TAX = 0.1;
+    const MAX_TAX = 0.2;
 
     if (buyTax <= MAX_TAX && sellTax <= MAX_TAX) {
       // If the buy/sell tax is less than the max tax, return the data and success

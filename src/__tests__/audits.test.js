@@ -1,13 +1,15 @@
 const GoPlusAudit = require("../controller/audit/audits/GoPlusAudit");
 const MythrilAudit = require("../controller/audit/audits/MythrilAudit");
-const Audit = require("../controller/audit/index");
+const Audit = require("../controller/audit/Audit");
 const { ETH_PAIR, BASE_PAIR, V3_ETH_FALSE_POSITIVE } = require("./utils/pairs");
 
 jest.setTimeout(1800000); // 1800 seconds
 
 describe("Audit", () => {
   it("Should pass GoPlus Audit", async () => {
-    const goPlusResults = await GoPlusAudit(
+    const goPlusAudit = new GoPlusAudit();
+
+    const goPlusResults = await goPlusAudit.main(
       "1",
       "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
     );
@@ -16,12 +18,21 @@ describe("Audit", () => {
   });
 
   it("Should handle more then 30 requests to GoPlus", async () => {
-    const goPlusResults = await GoPlusAudit(
-      "1",
-      "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-    );
+    const goPlusAudit = new GoPlusAudit();
 
-    expect(goPlusResults.success).toBe(true);
+    goPlusAudit.startAuditQueue();
+
+    for (let i = 0; i < 32; i++) {
+      const goPlusResults = await goPlusAudit.main(
+        "1",
+        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+      );
+    }
+    expect(goPlusAudit.counter).toBeGreaterThan(20); // Some audits will finish before we get here
+    await new Promise((resolve) => setTimeout(resolve, 300000)); // 5 minutes
+
+    goPlusAudit.stopAuditQueue();
+    expect(goPlusAudit.counter).toBe(0);
   });
 
   // it("Should pass mythril audit with Ethereum WETH", async () => {
