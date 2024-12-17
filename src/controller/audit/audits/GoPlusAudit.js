@@ -18,7 +18,7 @@ class GoPlusAudit {
   /**
    * Starts the GoPlus audit queue processing
    */
-  startAuditQueue() {
+  startGoPlusQueue() {
     if (this.intervalId) {
       console.log("Audit queue is already running");
       return;
@@ -38,7 +38,7 @@ class GoPlusAudit {
       } else if (this.queue.length > 30) {
         auditsToRun = 30;
       } else {
-        auditsToRun = 30 - this.queue.length;
+        auditsToRun = this.queue.length;
       }
 
       // Run the audits
@@ -47,7 +47,7 @@ class GoPlusAudit {
         const { chainId, newTokenAddress } = this.queue[i];
 
         // Run the audit
-        this.goPlusAudit(chainId, newTokenAddress);
+        await this.main(chainId, newTokenAddress);
 
         // Wait for 1 second before running the next audit
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -58,11 +58,10 @@ class GoPlusAudit {
   /**
    * Stops the GoPlus audit queue processing
    */
-  stopAuditQueue() {
+  stopGoPlusQueue() {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
-      console.log("Audit queue processing stopped");
     }
   }
 
