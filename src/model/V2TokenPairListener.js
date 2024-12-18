@@ -58,25 +58,23 @@ class V2TokenPairListener {
 
     let data;
 
-    // New token checking logic
-    if (!checkIfTokenIsNew(token0)) {
-      // Create a data object
-      data = {
-        chainId: this.chainId,
-        newTokenAddress: token1,
-        baseTokenAddress: token0,
-        pairAddress: pair,
-        v3: false,
-      };
-    } else {
-      data = {
-        chainId: this.chainId,
-        newTokenAddress: token0,
-        baseTokenAddress: token1,
-        pairAddress: pair,
-        v3: false,
-      };
+    // Find out which token is new
+    const { newToken, baseToken } = checkIfTokenIsNew(token0, token1);
+
+    // If both tokens are known, return
+    if (!newToken) {
+      console.log("************* | Both tokens are known | *************");
+      return;
     }
+
+    // Create a data object
+    data = {
+      chainId: this.chainId,
+      newTokenAddress: newToken,
+      baseTokenAddress: baseToken,
+      pairAddress: pair,
+      v3: false,
+    };
 
     // Send it to the app
     await this.app.auditDodo(this.bigIntSafeSerialize(data));

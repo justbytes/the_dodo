@@ -1,402 +1,67 @@
 [
   {
     "id": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
-    "name": "Wrapped Ether"
+    "name": "Wrapped Ether",
+    "chainId": 1
   },
   {
     "id": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
-    "name": "USD Coin"
+    "name": "USD Coin",
+    "chainId": 1
   },
   {
     "id": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-    "name": "Tether USD"
+    "name": "Tether USD",
+    "chainId": 1
   },
   {
     "id": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599",
-    "name": "Wrapped BTC"
+    "name": "Wrapped BTC",
+    "chainId": 1
   },
   {
     "id": "0x6b175474e89094c44da98b954eedeac495271d0f",
-    "name": "Dai Stablecoin"
-  },
-  {
-    "id": "0x7f39c581f595b53c5cb19bd0b3f8da6c935e2ca0",
-    "name": "Wrapped liquid staked Ether 2.0"
+    "name": "Dai Stablecoin",
+    "chainId": 1
   },
   {
     "id": "0x4c9edd5852cd905f086c759e8383e09bff1e68b3",
-    "name": "USDe"
+    "name": "USDe",
+    "chainId": 1
   },
   {
     "id": "0x514910771af9ca656af840dff83e8264ecf986ca",
-    "name": "ChainLink Token"
-  },
-  {
-    "id": "0x956f47f50a910163d8bf957cf5846d573e7f87ca",
-    "name": "Fei USD"
-  },
-  {
-    "id": "0x4d224452801aced8b2f0aebe155379bb5d594381",
-    "name": "ApeCoin"
-  },
-  {
-    "id": "0x1f9840a85d5af5bf1d1762f925bdaddc4201f984",
-    "name": "Uniswap"
-  },
-  {
-    "id": "0x2b591e99afe9f32eaa6214f7b7629768c40eeb39",
-    "name": "HEX"
-  },
-  {
-    "id": "0xa47c8bf37f92abed4a126bda807a7b7498661acd",
-    "name": "Wrapped UST Token"
-  },
-  {
-    "id": "0x853d955acef822db058eb8505911ed77f175b99e",
-    "name": "Frax"
-  },
-  {
-    "id": "0xcd5fe23c85820f7b72d0926fc9b05b43e359b7ee",
-    "name": "Wrapped eETH"
-  },
-  {
-    "id": "0xf4d2888d29d722226fafa5d9b24f9164c092421e",
-    "name": "LooksRare Token"
-  },
-  {
-    "id": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
-    "name": "Pepe"
+    "name": "ChainLink Token",
+    "chainId": 1
   },
   {
     "id": "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
-    "name": "Matic Token"
+    "name": "Matic Token",
+    "chainId": 1
   },
   {
-    "id": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
-    "name": "SHIBA INU"
+    "id": "0x4200000000000000000000000000000000000006",
+    "name": "Wrapped Ether",
+    "chainId": 8453
   },
   {
-    "id": "0xae78736cd615f374d3085123a210448e74fc6393",
-    "name": "Rocket Pool ETH"
+    "id": "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+    "name": "USD Coin",
+    "chainId": 8453
   },
   {
-    "id": "0x5a98fcbea516cf06857215779fd812ca3bef1b32",
-    "name": "Lido DAO Token"
+    "id": "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+    "name": "Wrapped BTC",
+    "chainId": 8453
   },
   {
-    "id": "0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2",
-    "name": "Maker"
+    "id": "0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb",
+    "name": "Dai Stablecoin",
+    "chainId": 8453
   },
   {
-    "id": "0xbf5495efe5db9ce00f80364c8b423567e58d2110",
-    "name": "Renzo Restaked ETH"
-  },
-  {
-    "id": "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72",
-    "name": "Ethereum Name Service"
-  },
-  {
-    "id": "0xbe9895146f7af43049ca1c1ae358b0541ea49704",
-    "name": "Coinbase Wrapped Staked ETH"
-  },
-  {
-    "id": "0x92d6c1e31e14520e676a687f0a93788b716beff5",
-    "name": "dYdX"
-  },
-  {
-    "id": "0xaa6e8127831c9de45ae56bb1b0d4d4da6e5665bd",
-    "name": "ETH 2x Flexible Leverage Index"
-  },
-  {
-    "id": "0xcbb7c0000ab88b473b1f5afd9ef808440eed33bf",
-    "name": "Coinbase Wrapped BTC"
-  },
-  {
-    "id": "0x8e870d67f660d95d5be530380d0ec0bd388289e1",
-    "name": "Paxos Standard"
-  },
-  {
-    "id": "0x5f98805a4e8be255a32880fdec7f6728c6568ba0",
-    "name": "LUSD Stablecoin"
-  },
-  {
-    "id": "0x1a7e4e63778b4f12a199c062f3efdd288afcbce8",
-    "name": "agEUR"
-  },
-  {
-    "id": "0xbb0e17ef65f82ab018d8edd776e8dd940327b28b",
-    "name": "Axie Infinity Shard"
-  },
-  {
-    "id": "0x046eee2cc3188071c02bfc1745a6b17c656e3f3d",
-    "name": "Rollbit Coin"
-  },
-  {
-    "id": "0x6123b0049f904d730db3c36a31167d9d4121fa6b",
-    "name": "Ribbon"
-  },
-  {
-    "id": "0x4fabb145d64652a948d72533023f6e7a623c7c53",
-    "name": "Binance USD"
-  },
-  {
-    "id": "0x5283d291dbcf85356a21ba090e6db59121208b44",
-    "name": "Blur"
-  },
-  {
-    "id": "0x9e32b13ce7f2e80a01932b42553652e053d6ed8e",
-    "name": "Metis Token"
-  },
-  {
-    "id": "0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9",
-    "name": "Aave Token"
-  },
-  {
-    "id": "0xc581b735a1688071a1746c968e0798d642ede491",
-    "name": "Euro Tether"
-  },
-  {
-    "id": "0xfaba6f8e4a5e8ab82f62fe7c39859fa577269be3",
-    "name": "Ondo"
-  },
-  {
-    "id": "0x77e06c9eccf2e797fd462a92b6d7642ef85b0a44",
-    "name": "Wrapped TAO"
-  },
-  {
-    "id": "0xd533a949740bb3306d119cc777fa900ba034cd52",
-    "name": "Curve DAO Token"
-  },
-  {
-    "id": "0x111111111117dc0aa78b770fa6a738034120c302",
-    "name": "1INCH Token"
-  },
-  {
-    "id": "0x57e114b691db790c35207b2e685d4a43181e6061",
-    "name": "ENA"
-  },
-  {
-    "id": "0x15d4c048f83bd7e37d49ea4c83a07267ec4203da",
-    "name": "Gala"
-  },
-  {
-    "id": "0x4e15361fd6b4bb609fa63c81a2be19d873717870",
-    "name": "Fantom Token"
-  },
-  {
-    "id": "0xd31a59c85ae9d8edefec411d448f90841571b89c",
-    "name": "Wrapped SOL (Wormhole)"
-  },
-  {
-    "id": "0x03ab458634910aad20ef5f1c8ee96f1d6ac54919",
-    "name": "Rai Reflex Index"
-  },
-  {
-    "id": "0x99d8a9c45b2eca8864373a26d1459e3dff1e17f3",
-    "name": "Magic Internet Money"
-  },
-  {
-    "id": "0xb23d80f5fefcddaa212212f028021b41ded428cf",
-    "name": "Prime"
-  },
-  {
-    "id": "0xffffa9353a62ebfd0a652529cd04c09265b4bc8f",
-    "name": "Screenshot_20241030_095958"
-  },
-  {
-    "id": "0xffff2daa67b2f01c6102365b4425dafaa151821b",
-    "name": "You, The Unseen"
-  },
-  {
-    "id": "0xfffeed0eb35bd74b86918bcd9584b47a4ee2f810",
-    "name": "Celestial Muse"
-  },
-  {
-    "id": "0xfffd6f2f0a4d2cf41ed0c886d684432ee1d1fb61",
-    "name": "Aether"
-  },
-  {
-    "id": "0xfffd1d04485df0ee3b96dbfbcc59ea5df491c72c",
-    "name": "Serafim"
-  },
-  {
-    "id": "0xfffc6541d9a96103adf0fb75a62fd2618d48a2e1",
-    "name": "War Dance of Corporations"
-  },
-  {
-    "id": "0xfffc0de9d6c681085968d826337cc817d271823f",
-    "name": "Territories Up"
-  },
-  {
-    "id": "0xfffb970e43a599499cf6ebd0a7aded99134bc5eb",
-    "name": "WHALE"
-  },
-  {
-    "id": "0xfffb1009f4333a1a27fb1bdae0ade16344966ad9",
-    "name": "WOW"
-  },
-  {
-    "id": "0xfffa2ada5842584cbc530d35730090fd039e6f57",
-    "name": "Slimecard152"
-  },
-  {
-    "id": "0xfff9113f648dda3dee52410267cab6e559a860f3",
-    "name": "Bull Express"
-  },
-  {
-    "id": "0xfff8bf5fa1ebff3558ed14d31f423599008cedbe",
-    "name": "Base_Mood"
-  },
-  {
-    "id": "0xfff88de0a92dbfac7aec378b2835f696e33f0f60",
-    "name": "Febby"
-  },
-  {
-    "id": "0xfff741c4100ffee4c8f87e5394fabb8191f63bbe",
-    "name": "aug 8 demo"
-  },
-  {
-    "id": "0xfff6f89df4ca4dfbb8dda0de2d9dd13ec0c1b249",
-    "name": "The king of lions "
-  },
-  {
-    "id": "0xfff5c502c24613b16aaaa76667fb728af8fe32f4",
-    "name": "Keeping Status"
-  },
-  {
-    "id": "0xfff5250f72bfcd945c5c4ca2a334c5dbdbaf091d",
-    "name": "Boxingmeme"
-  },
-  {
-    "id": "0xfff4880b0aa2f8ef499a9fed0f3eefe77200b919",
-    "name": "btc3"
-  },
-  {
-    "id": "0xfff469d073c2755153f00c059d3087c28de275ae",
-    "name": "X"
-  },
-  {
-    "id": "0xfff46364bd829e53e285e8877a8274bb307e1a5d",
-    "name": "Azur"
-  },
-  {
-    "id": "0xfff446bdc4f3be8c68ec14f4da286a1aa23ef894",
-    "name": "Betty"
-  },
-  {
-    "id": "0xfff3f5dff374f9a1bae2b3bdb905f2ae34ec68d3",
-    "name": "JARJIT SINGH"
-  },
-  {
-    "id": "0xfff3dfa97bdf065724968a6f9b096131893fb2f5",
-    "name": "☢️RayAi"
-  },
-  {
-    "id": "0xfff1e1ed8ba0f2df2b134f3ab399494385037654",
-    "name": "Jumper "
-  },
-  {
-    "id": "0xfff0c7f2e0df9e3b5d9e4bbd1fd23104e669eaaa",
-    "name": "Telegram"
-  },
-  {
-    "id": "0xffeffc708f5e2defc9ff23d6e51849a0373463b3",
-    "name": "Long way"
-  },
-  {
-    "id": "0xffefc9211c60b4985773603236e476823947ed1b",
-    "name": "Mobile Dream Launchpad"
-  },
-  {
-    "id": "0xffef677d6086251ba8caad09b46559eb585a1c0b",
-    "name": "Bid"
-  },
-  {
-    "id": "0xffef442a27babd2ba8c8bbd267a565b5662c8821",
-    "name": "Wrapped BRETT"
-  },
-  {
-    "id": "0xffee1814cae009873e70fe4d68e0fe397b78e1da",
-    "name": "BURNS"
-  },
-  {
-    "id": "0xffedaf8582dcb29f3c307737a8693b6f723139bc",
-    "name": "SPAM3"
-  },
-  {
-    "id": "0xffed7086125416fd92de006ac7da6b1245919786",
-    "name": "based grandma"
-  },
-  {
-    "id": "0xffeca178459d63275b433c2c5fb5a2ac73681a2b",
-    "name": "Astral Arrows"
-  },
-  {
-    "id": "0xffeb9abd08f37942962ed3a553616605283d1026",
-    "name": "Cleaners"
-  },
-  {
-    "id": "0xffeb3a2cc691d4dbf9a398d7e6999752aa9c858c",
-    "name": "38"
-  },
-  {
-    "id": "0xffeae01d631ee48e8007b65b663557c4ddfa8176",
-    "name": "noun jesse "
-  },
-  {
-    "id": "0xffea114e9731d0d62ecab4d5faf4878ecce982b2",
-    "name": "Cloody McClood"
-  },
-  {
-    "id": "0xffe9968a2b3fb52393bc21ab6500c7f96451b7dd",
-    "name": "Brisbane Kits"
-  },
-  {
-    "id": "0xffe95063094c18225c454e7f90e9342b9b1cabad",
-    "name": "Setter"
-  },
-  {
-    "id": "0xffe739d06ffb8733cf81bc5b6342ca32c2292b9d",
-    "name": "🎁Gif"
-  },
-  {
-    "id": "0xffe70960a76cea4ed04997e08ab04b658a6ac42e",
-    "name": "BaseFather CTO "
-  },
-  {
-    "id": "0xffe68fe97ccec2afe0c0d8a10fffd6c1fdcc9118",
-    "name": "Throw Installing"
-  },
-  {
-    "id": "0xffe604376a63afb797111212d560e7fe38251a4d",
-    "name": "Out Instrumentation"
-  },
-  {
-    "id": "0xffe496a5d03ffb772b4b856c9036f8d7f3ea88d3",
-    "name": "w0rm"
-  },
-  {
-    "id": "0xffe4897680970a04cb74264f24aecbda32990c4b",
-    "name": "Punks"
-  },
-  {
-    "id": "0xffe44e314816455d5536217062161f9254a27fa2",
-    "name": "TOSHI"
-  },
-  {
-    "id": "0xffe3883ee164c47d41ffd5280fc7b9a0aab9a29b",
-    "name": "#160 - The Volcano"
-  },
-  {
-    "id": "0xffe37353b5c8dee52ceaa39b8aab645bb9b24e88",
-    "name": "Fall in New Hampshire 01"
-  },
-  {
-    "id": "0xffe33e8cadf0bb0202cdfc7a73128906eae7b35b",
-    "name": "Amsterdam"
-  },
-  {
-    "id": "0xffe2f4f725872e808ae65ebcd2e3898b054dcb20",
-    "name": "Hunter Dog"
+    "id": "0x5d3a1Ff2b6BAb83b63cd9AD0787074081a52ef34",
+    "name": "USDe",
+    "chainId": 8453
   }
 ]

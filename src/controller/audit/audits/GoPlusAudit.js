@@ -19,12 +19,13 @@ class GoPlusAudit {
    * Starts the GoPlus audit queue processing
    */
   startGoPlusQueue() {
-    if (this.intervalId) {
+    if (this.intervalQueue) {
       console.log("Audit queue is already running");
       return;
     }
 
-    this.intervalId = setInterval(async () => {
+    // Gives GoPlus a one minute break every 30 minutes
+    this.intervalQueue = setInterval(async () => {
       console.log("*******   CHECKING GOPLUS AUDIT QUEUE   *******");
       console.log("");
       // Allow for 30 more GoPlusAudits to be called
@@ -115,9 +116,12 @@ class GoPlusAudit {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
-      // Make the GoPlus API call
+      // Make the GoPlus Data
       try {
+        // Make the GoPlus API call
         response = await GoPlus.tokenSecurity(chainId, targetAddress, TIMEOUT);
+
+        // Increment the number of audits calls
         this.counter++;
       } catch (error) {
         // Retry if it fails 12 times
@@ -152,10 +156,11 @@ class GoPlusAudit {
       else if (
         !response ||
         response === undefined ||
-        Object.keys(response).length === 0
+        Object.keys(response).length === 0 ||
+        Object.keys(response.result).length === 0
       ) {
         console.log(
-          "GoPlus Data is invalid or empty. Retries left: ",
+          "GoPlus data is invalid or empty. Retries left: ",
           MAX_RETRIES - retryCount
         );
         console.log("");
@@ -263,7 +268,7 @@ class GoPlusAudit {
     );
 
     // If there are 30 audits called within the minute, add the new audit to the queue
-    if (this.goPlusAuditsActive >= 30) {
+    if (this.counter >= 30) {
       // If the newTokenAddress is already in the queue, return
       if (recorded) {
         return;

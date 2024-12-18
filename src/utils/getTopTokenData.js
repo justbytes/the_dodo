@@ -31,8 +31,6 @@ const requestTopTokens = async (name, baseUrl, subgraphId) => {
   try {
     // Request data from subgraph
     const request = await axios.post(V3_URL, { query: query });
-    console.log(V3_URL);
-    console.log({ ...request.data });
     tokens = request.data.data.tokens;
 
     return tokens;
