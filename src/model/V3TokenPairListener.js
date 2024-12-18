@@ -29,7 +29,6 @@ class V3TokenPairListener {
    * Activates a listener for a pair that is created on the Uniswap v3 protocol
    */
   activateListener() {
-    console.log(`Activating ${this.chainId} V3 listener!`);
     // Filter for PoolCreated events indicating a new pool
     const filter = {
       address: this.factoryAddress,
@@ -38,7 +37,6 @@ class V3TokenPairListener {
 
     // Activate the listener
     this.provider.ws.on(filter, (log) => {
-      console.log("New PoolCreated event detected!");
       this.processEventLog(log);
     });
   }
@@ -53,19 +51,7 @@ class V3TokenPairListener {
 
     const { token0, token1, fee, tickSpacing, pool } = decodedLog.args;
 
-    console.log(
-      `
-************* | V3 pair detected | *************\n
-******\n
-****** chainId: ${this.chainId}\n
-****** token0: ${token0}\n
-****** token1: ${token1}\n
-****** pair address: ${pool}\n
-****** fee: ${fee}\n
-******\n
-************************************************
-`
-    );
+    console.log("************* | V3 pair detected | *************");
     console.log("");
 
     let data;
@@ -97,9 +83,6 @@ class V3TokenPairListener {
 
     // Increment the total sent
     this.totalSent++;
-
-    console.log(`Data sent to app. Total V3 Sent: ${this.totalSent}`);
-    console.log("");
   }
 
   // Utility function for BigInt-safe serialization

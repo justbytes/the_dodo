@@ -15,77 +15,57 @@ class MythrilAudit {
   }
 
   /**
-   * Format Mythril results
-   * @param {object} results
-   * @returns {object} formatted results
-   */
-  formatResults = (stdout) => {
-    // Parse the stdout
-    const data = JSON.parse(stdout);
-
-    return {
-      error: data.error,
-      issues: data.issues.map((issue) => ({
-        title: issue.title,
-        description: issue.description,
-        severity: issue.severity,
-        function: issue.function,
-      })),
-      success: data.success,
-    };
-  };
-
-  /**
    * Checks the results of the Mythril Audit
    * @param {object} results
    * @param {string} chainId
    * @returns {object} results
    */
-  proccessAudit = () => {
+  proccessedResults = (stdout) => {
+    // Parse the stdout
+    let data = JSON.parse(stdout);
+
+    // Return if audit failed
+    if (!data.success) {
+      return data;
+    }
+
+    // If the audit was successful and there are no issues, return the data
+    if (data.success && data.issues.length === 0) {
+      return data;
+    }
+
+    // If we made it to this line the audit was successful but has more than 0 issues.
     // Loop through issues and catch high severity issues
-    for (const issue of this.results.issues) {
+    for (const issue of data.issues) {
       // Catch high severity issues
       if (issue.severity === "High") {
-        // Function name() and symbol() are not issues on Base
-        if (Number(this.chainId) === 8453) {
-          // If the function is name() or symbol(), continue
-          if (
-            issue.function === "name()" ||
-            issue.function ===
-              "link_classic_internal(uint64,int64) or symbol()" ||
-            issue.function === "symbol() or link_classic_internal(uint64,int64)"
-          ) {
+        // Function name() and symbol() are not issues on Base // This isn't confirmed yet...
+        if (this.chainId == 8453) {
+          // Known safe functions on Base chain
+          const safeFunctions = [
+            "name()",
+            "symbol()",
+            "link_classic_internal(uint64,int64) or symbol()",
+            "symbol() or link_classic_internal(uint64,int64)",
+          ];
+
+          // Check if the function is in the safe functions array
+          if (safeFunctions.includes(issue.function)) {
+            // Continue to the next issue
             continue;
+          } else {
+            // Set the success to false
+            data.success = false;
+
+            // Stop and return the data
+            return data;
           }
         }
-        console.log("High severity issue found");
-        // TODO: create a snapshot of the dodo instance and save it for analysis in the future
-        return this.results;
       }
     }
-    return this.results;
-  };
 
-  /**
-   * Handles control flow results of the Mythril audit
-   * @param {string} stdout
-   * @returns {object} formatted results
-   */
-  handleResults = (stdout) => {
-    // Format the results
-    this.results = this.formatResults(stdout);
-
-    // If the audit was unsuccessful, return false
-    if (!this.results.success) {
-      return this.results;
-    }
-
-    // If no issues are found, return results, otherwise process them
-    if (this.results.issues.length === 0) {
-      return this.results;
-    } else {
-      return this.proccessAudit();
-    }
+    // Return the data
+    return data;
   };
 
   /**
@@ -93,8 +73,9 @@ class MythrilAudit {
    * @returns {object} formatted results
    */
   async main() {
+    // Run the mythril audit with the target address and chainId
     try {
-      // Run the mythril audit with the target address and chainId
+      // Run the python mythril command
       const { stdout, stderr } = await execPromise(
         `myth analyze -a ${this.newTokenAddress} ${getInfuraSettings(
           this.chainId
@@ -109,18 +90,20 @@ class MythrilAudit {
       }
 
       // Handle the results
-      return this.handleResults(stdout);
+      return this.proccessedResults(stdout);
     } catch (error) {
       // Error code 1 happens because of the --execution-timeout flag but still has the results
       if (error.code === 1) {
-        return this.handleResults(error.stdout);
+        return this.proccessedResults(error.stdout);
       }
 
+      // Display the error
       console.error(
         "| mythrilAudit.js | Their is a problem running the Mythril Audit\n",
         error
       );
 
+      // Return the error
       return error;
     }
   }

@@ -47,6 +47,8 @@ const main = async () => {
       );
     }
   }
+
+  console.log("Welcome to the Dodo Finder!");
 };
 
 main();

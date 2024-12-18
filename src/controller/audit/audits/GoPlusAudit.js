@@ -26,6 +26,7 @@ class GoPlusAudit {
 
     this.intervalId = setInterval(async () => {
       console.log("*******   CHECKING GOPLUS AUDIT QUEUE   *******");
+      console.log("");
       // Allow for 30 more GoPlusAudits to be called
       this.counter = 0;
 
@@ -119,7 +120,20 @@ class GoPlusAudit {
         response = await GoPlus.tokenSecurity(chainId, targetAddress, TIMEOUT);
         this.counter++;
       } catch (error) {
+        // Retry if it fails 12 times
+        if (retryCount < MAX_RETRIES) {
+          await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+          retryCount++;
+          return fetchData();
+        }
         console.error("GoPlus token security API call failed:", error);
+        return false;
+      }
+
+      // Check max retries
+      if (retryCount >= MAX_RETRIES) {
+        console.log("Max retries reached, unable to fetch data from GoPlus");
+        console.log("");
         return false;
       }
 
@@ -129,6 +143,7 @@ class GoPlusAudit {
           "GoPlus Rate Limit Reached. Retries left: ",
           MAX_RETRIES - retryCount
         );
+        console.log("");
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         retryCount++;
         return fetchData();
@@ -143,15 +158,10 @@ class GoPlusAudit {
           "GoPlus Data is invalid or empty. Retries left: ",
           MAX_RETRIES - retryCount
         );
+        console.log("");
         await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
         retryCount++;
         return fetchData();
-      }
-
-      // Check max retries
-      if (retryCount >= MAX_RETRIES) {
-        console.log("Max retries reached, unable to fetch data from GoPlus");
-        return false;
       }
 
       // Return the first key's value from the response
@@ -163,13 +173,7 @@ class GoPlusAudit {
 
     // If the response is false, return the failure
     if (!response) {
-      return {
-        success: false,
-        results: {
-          securityData: null,
-          reason: "Could not fetch GoPlus data",
-        },
-      };
+      return false;
     }
 
     return response;
@@ -188,15 +192,20 @@ class GoPlusAudit {
     // Get the security data
     const data = await this.fetchSecurityData(chainId, targetAddress);
 
+    if (!data) {
+      return {
+        success: false,
+        data: null,
+        reason: "GoPlus API call failed",
+      };
+    }
     // Check if contract is open source first
     if (data.is_open_source !== "1") {
       // If the contract is not open source, return the data and reason for failure
       return {
         success: false,
-        results: {
-          securityData: data,
-          reason: "Contract is not open source",
-        },
+        data: data,
+        reason: "Contract is not open source",
       };
     }
 
@@ -209,10 +218,8 @@ class GoPlusAudit {
       // If the trading is not secure, return the data and reason for failure
       return {
         success: false,
-        results: {
-          securityData: data,
-          reason: "Token cannot be freely traded",
-        },
+        data: data,
+        reason: "Unknown buy/sell tax",
       };
     }
 
@@ -221,10 +228,8 @@ class GoPlusAudit {
       // If the buy/sell tax is unknown, return the data and reason for failure
       return {
         success: false,
-        results: {
-          securityData: data,
-          reason: "Unknown buy/sell tax",
-        },
+        data: data,
+        reason: "Unknown buy/sell tax",
       };
     }
 
@@ -234,15 +239,13 @@ class GoPlusAudit {
 
     if (buyTax <= MAX_TAX && sellTax <= MAX_TAX) {
       // If the buy/sell tax is less than the max tax, return the data and success
-      return { success: true, results: { ...data } };
+      return { success: true, data: { ...data } };
     } else {
       // If the buy/sell tax is greater than the max tax, return the data and reason for failure
       return {
         success: false,
-        results: {
-          securityData: { ...data },
-          reason: "Buy/Sell tax too high",
-        },
+        data: { ...data },
+        reason: "Buy/Sell tax too high",
       };
     }
   }
@@ -292,8 +295,8 @@ class GoPlusAudit {
 
     return {
       success: securityResults.success,
-      securityData: { ...securityResults.results },
-      maliciousData: { ...maliciousResults },
+      data: { ...securityResults.data, ...maliciousResults },
+      reason: securityResults.success ? null : securityResults.reason,
     };
   }
 }

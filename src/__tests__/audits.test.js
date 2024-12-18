@@ -82,6 +82,18 @@ describe("Audit", () => {
   });
 
   /**
+   * Should catch high risk issues
+   */
+  it("Should catch high risk issues", async () => {
+    const mythrilResults = await MythrilAudit(
+      "8453",
+      "0x0b3e328455c4059EEb9e3f84b5543F74E24e7E1b"
+    );
+
+    expect(mythrilResults.success).toBe(false);
+  });
+
+  /**
    * Test a few contracts to audit with Mythril
    */
   it("Should pass multiple Mythril audits", async () => {
@@ -110,6 +122,9 @@ describe("Audit", () => {
     expect(auditResults.success).toBe(true);
   });
 
+  /**
+   * Should handle the audit queue successfully
+   */
   it("Should run audits in Audit queue", async () => {
     let length;
 

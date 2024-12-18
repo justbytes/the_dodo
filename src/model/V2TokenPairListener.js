@@ -30,14 +30,12 @@ class V2TokenPairListener {
    * Activates a listener for a pair that is created on the Uniswap v2 protocol
    */
   activateListener() {
-    console.log(`Activating ${this.chainId} V2 listener!`);
     const filter = {
       address: this.factoryAddress,
       topics: [FACTORY_V2_INTERFACE.getEvent("PairCreated").topicHash],
     };
 
     this.provider.ws.on(filter, (log) => {
-      console.log("New PairCreated event detected!");
       this.processEventLog(log).catch((err) => {
         console.log("Error processing event log", err);
       });
@@ -55,18 +53,7 @@ class V2TokenPairListener {
     // Extract the token0, token1, and pair address from the decoded log
     const { token0, token1, pair } = decodedLog.args;
 
-    console.log(
-      `
-************* | V2 pair detected | *************\n
-******\n
-****** chainId: ${this.chainId}\n
-****** token0: ${token0}\n
-****** token1: ${token1}\n
-****** pair address: ${pair}\n
-******\n
-************************************************
-`
-    );
+    console.log("************* | V2 pair detected | *************");
     console.log("");
 
     let data;
@@ -96,9 +83,6 @@ class V2TokenPairListener {
 
     // Increment the total sent
     this.totalSent++;
-
-    console.log(`Data sent to app. Total V2 Sent: ${this.totalSent}`);
-    console.log("");
   }
 
   // Utility function for BigInt-safe serialization

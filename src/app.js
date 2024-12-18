@@ -11,6 +11,8 @@ class App {
     this.totalReceived = 0;
     this.audit = new Audit();
     this.trader = new Trader();
+
+    this.audit.startQueue();
   }
 
   /**
@@ -29,20 +31,17 @@ class App {
     this.#dodos.set(dodoEgg.id, dodoEgg);
 
     // Do the audit
-    const auditResults = await this.audit.run(
+    dodoEgg.auditResults = await this.audit.run(
       dodoEgg.chainId,
       dodoEgg.newTokenAddress
     );
 
-    // Add the audit results to the DodoEgg object
-    dodoEgg.auditResults = auditResults;
-
     // Save the audit results
-    saveAuditedDodoEgg(auditResults.success, dodoEgg.getDodoEgg());
+    saveAuditedDodoEgg(dodoEgg.auditResults.success, dodoEgg.getDodoEgg());
 
     // If the audit was not successful, remove the pair from the Map
-    if (auditResults.success) {
-      console.log("*******   AUDIT SUCCESS   *******");
+    if (dodoEgg.auditResults.success) {
+      console.log("************* |   AUDIT SUCCESS   | *************");
       console.log("");
 
       // Try to trade the token pair
@@ -50,7 +49,16 @@ class App {
 
       return;
     } else {
-      console.log("*******   AUDIT FAILED   *******");
+      console.log("************* |   AUDIT FAILED   | *************");
+
+      // Log the reason
+      if (dodoEgg.auditResults.mythrilAudit === null) {
+        console.log(dodoEgg.auditResults.goPlusAudit.reason);
+      } else if (dodoEgg.auditResults.mythrilAudit.success === false) {
+        console.log("Failed Mythril Audit");
+      } else {
+        console.log("Unknown failure reason");
+      }
       console.log("");
 
       // Remove the pair from the Map
