@@ -2,6 +2,7 @@ const { ethers } = require("ethers");
 const { Alchemy, Interface } = require("alchemy-sdk");
 const getAlchemySettings = require("./utils/getAlchemySettings");
 const checkIfTokenIsNew = require("./utils/newTokenChecker");
+const WebSocket = require("ws");
 
 // Get contract ABI's
 const {
@@ -17,9 +18,9 @@ class V2TokenPairListener {
    * @param {number} chainId
    */
 
-  constructor(app, factoryAddress, chainId) {
+  constructor(factoryAddress, chainId) {
     this.totalSent = 0;
-    this.app = app;
+    this.server = new WebSocket("ws://localhost:8069");
     this.factoryAddress = factoryAddress;
     this.chainId = chainId;
     this.provider = new Alchemy(getAlchemySettings(chainId));
@@ -30,16 +31,26 @@ class V2TokenPairListener {
    * Activates a listener for a pair that is created on the Uniswap v2 protocol
    */
   activateListener() {
-    const filter = {
-      address: this.factoryAddress,
-      topics: [FACTORY_V2_INTERFACE.getEvent("PairCreated").topicHash],
-    };
+    console.log("************* | Activating V2 listener | *************");
+    try {
+      // Create a filter for the listener
+      const filter = {
+        address: this.factoryAddress,
+        topics: [FACTORY_V2_INTERFACE.getEvent("PairCreated").topicHash],
+      };
 
-    this.provider.ws.on(filter, (log) => {
-      this.processEventLog(log).catch((err) => {
-        console.log("Error processing event log", err);
+      // Create a listener for with the filter
+      this.provider.ws.on(filter, (log) => {
+        this.processEventLog(log).catch((err) => {
+          console.log("Error processing event log", err);
+        });
       });
-    });
+    } catch (error) {
+      console.error(
+        `There was an error activating the ${this.chainId} V2 listener.\n` +
+          error
+      );
+    }
   }
 
   /**
@@ -76,8 +87,8 @@ class V2TokenPairListener {
       v3: false,
     };
 
-    // Send it to the app
-    await this.app.auditDodo(this.bigIntSafeSerialize(data));
+    // Send it to the server
+    this.server.send(this.bigIntSafeSerialize(data));
 
     // Increment the total sent
     this.totalSent++;

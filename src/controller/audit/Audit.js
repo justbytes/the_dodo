@@ -7,60 +7,43 @@ const MythrilAudit = require("./audits/MythrilAudit");
  * @description This class is used to run the audits on the new token
  */
 class Audit {
-  constructor() {
+  /**
+   * Constructor for the Audit class
+   * @param {App} app - The main app instance
+   */
+  constructor(app) {
+    this.app = app;
+
+    // Counters
+    this.goPlusCalls = 0;
     this.mythrilInstances = 0;
-    this.auditQueue = [];
-    this.intervalId = null;
-    this.goPlusAudit = new GoPlusAudit();
+
+    // Queues
+    this.goPlusQueue = [];
+    this.mythrilQueue = [];
+
+    // Timers / Intervals
+    this.goPlusInterval = null;
+    this.mythrilInterval = null;
+
+    // Keeps track of the running audits
+    this.goPlusRunning = new Set();
   }
 
   /**
-   * Starts the Mythril audit queue
+   * Runs the GoPlus audit
+   * @param {string} chainId
+   * @param {string} newTokenAddress
+   * @returns
    */
-  startQueue() {
-    if (this.intervalId) {
-      console.log("Audit queue is already running");
-      return;
-    }
+  async goPlusAudit(chainId, newTokenAddress) {
+    // GoPlus Audit
+    const results = await GoPlusAudit(this, chainId, newTokenAddress);
 
-    this.goPlusAudit.startGoPlusQueue();
-
-    // Checks the queue to see if we can run an audit every 90 seconds
-    this.intervalId = setInterval(async () => {
-      console.log("*******   CHECKING MYTHRIL AUDIT QUEUE   *******");
-      console.log("");
-
-      // If there are audits in the queue, run them
-      if (this.auditQueue.length > 0 && this.mythrilInstances < 4) {
-        let auditsToRun = 0;
-
-        // Get the amount of audits to run
-        if (this.auditQueue.length > 4) {
-          auditsToRun = 4;
-        } else {
-          auditsToRun = this.auditQueue.length;
-        }
-
-        // Run the audits
-        for (let i = 0; i < auditsToRun; i++) {
-          // Get and remove the first item from the queue (FIFO)
-          const audit = this.auditQueue.shift();
-
-          // Run the audit
-          this.mythrilAudit(audit.chainId, audit.newTokenAddress);
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        }
-      }
-    }, 90000); // 90 seconds
-  }
-
-  /**
-   * Stops the Mythril audit queue
-   */
-  stopQueue() {
-    clearInterval(this.intervalId);
-    this.goPlusAudit.stopGoPlusQueue();
-    this.intervalId = null;
+    return {
+      success: results.success,
+      data: { ...results },
+    };
   }
 
   /**
@@ -70,82 +53,183 @@ class Audit {
    * @returns
    */
   async mythrilAudit(chainId, newTokenAddress) {
-    // Check if the newTokenAddress is already in the queue
-    const recorded = this.auditQueue.some(
-      (queueItem) => queueItem.newTokenAddress === newTokenAddress
-    );
-    // If there are 4 audits running add the new audit to the queue
-    if (this.mythrilInstances >= 4) {
-      // If the newTokenAddress is already in the queue, return
-      if (recorded) {
-        return;
-      }
-
-      // Token is not in queue, add it
-      this.auditQueue.push({ chainId, newTokenAddress });
-      return;
-    }
-
-    // Start the Mythril audit
-    this.mythrilInstances++;
-
     // Run the Mythril audit
-    const mythrilResults = await MythrilAudit(chainId, newTokenAddress);
+    const mythrilResults = await MythrilAudit(this, chainId, newTokenAddress);
 
-    // Remove the audit from the queue if it was recorded
-    if (recorded) {
-      this.auditQueue = this.auditQueue.filter(
-        (item) =>
-          !(
-            item.chainId === chainId && item.newTokenAddress === newTokenAddress
-          )
-      );
-    }
-
-    // Decrement the number of active audits
-    this.mythrilInstances--;
-
-    return mythrilResults;
+    return {
+      success: mythrilResults.success,
+      data: { ...mythrilResults },
+    };
   }
 
   /**
-   * Runs the audits
-   * @returns
+   * Adds a new token to the audit queue
+   * @param {DodoEgg} dodoEgg
    */
-  async run(chainId, newTokenAddress) {
-    // GoPlus Audit
-    const goPlusResults = await this.goPlusAudit.main(chainId, newTokenAddress);
+  add(data) {
+    console.log("Audit received data");
 
-    // If the audit failed, return false
-    if (!goPlusResults.success) {
-      return {
-        success: false,
-        goPlusAudit: { ...goPlusResults },
-        mythrilAudit: null,
-        timestamp: new Date().toISOString(),
-      };
-    }
-
-    // Mythril Audit
-    const mythrilResults = await this.mythrilAudit(chainId, newTokenAddress);
-
-    // If the audit failed, return false
-    if (!mythrilResults.success) {
-      return {
-        success: false,
-        goPlusAudit: { ...goPlusResults },
-        mythrilAudit: { ...mythrilResults },
-        timestamp: new Date().toISOString(),
-      };
-    }
-
-    // Combine the results
-    return {
-      success: goPlusResults.success && mythrilResults.success,
-      goPlusAudit: { ...goPlusResults },
-      mythrilAudit: { ...mythrilResults },
-      timestamp: new Date().toISOString(),
+    // Create an object to store the audit data
+    const dodo = {
+      id: data.id,
+      chainId: data.chainId,
+      newTokenAddress: data.newTokenAddress,
+      goPlusResults: null,
+      mythrilResults: null,
+      running: false,
     };
+
+    // Add the audit to the GoPlus queue
+    this.goPlusQueue.push(dodo);
+  }
+
+  /**
+   * Stops the Mythril audit queue
+   */
+  stop() {
+    clearInterval(this.goPlusInterval);
+    clearInterval(this.mythrilInterval);
+    this.goPlusInterval = null;
+    this.mythrilInterval = null;
+  }
+
+  /**
+   * Starts the Mythril audit queue
+   */
+  start() {
+    console.log("************* |   Starting Audit Queue    | *************");
+
+    /**
+     * Begins the GoPlus Audit Interval which runs a check every second to see
+     * if we can run a go plus audit. If the audit comes back with a success,
+     * it will be added to the Mythril Audit Queue. If not it will return to the app
+     */
+    this.goPlusInterval = setInterval(async () => {
+      // Check if the queue is empty
+      if (this.goPlusQueue.length === 0) {
+        return;
+      }
+
+      // If the number of audits is greater than 30, wait for 1 minute and reset the counter
+      while (this.goPlusCalls >= 30) {
+        await new Promise((resolve) => setTimeout(resolve, 60000)); // 1 minute
+        this.goPlusCalls = 0;
+      }
+
+      // Look for the first non-running item in the queue
+      const index = this.goPlusQueue.findIndex(
+        (dodo) => !this.goPlusRunning.has(dodo.id)
+      );
+      if (index === -1) return; // All items are running
+
+      // Get the dodo from the queue
+      const dodo = this.goPlusQueue[index];
+
+      // Add the dodo to the running audits
+      this.goPlusRunning.add(dodo.id);
+
+      // Process the audit asynchronously
+      this.processGoPlusAudit(dodo).catch(console.error);
+    }, 1000); // 1 second
+
+    /**
+     * Begins the Mythril Audit Interval which runs a check every second to see
+     * if we can run a mythril audit. If the audit comes back with a success,
+     * it will be added to the Mythril Audit Queue. If not it will return to the app
+     */
+    this.mythrilInterval = setInterval(async () => {
+      // Check if the queue is empty
+      if (this.mythrilQueue.length === 0) {
+        return;
+      }
+
+      // Wait if we've hit the instance limit
+      while (this.mythrilInstances >= 4) {
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second wait
+      }
+
+      // Look for the first non-running item
+      const index = this.mythrilQueue.findIndex((dodo) => !dodo.running);
+      if (index === -1) return; // All items are running
+
+      const dodo = this.mythrilQueue[index];
+      dodo.running = true;
+      this.mythrilInstances++;
+
+      // Process the audit asynchronously
+      this.processMythrilAudit(dodo).catch(console.error);
+    }, 1100);
+  }
+
+  /**
+   * Processes the GoPlus audit
+   * @param {DodoEgg} dodo
+   */
+  async processGoPlusAudit(dodo) {
+    try {
+      // Run the audit
+      const auditResults = await this.goPlusAudit(
+        dodo.chainId,
+        dodo.newTokenAddress
+      );
+
+      // If the audit was successful, add it to the Mythril Queue
+      if (auditResults.success) {
+        dodo.goPlusResults = auditResults.data;
+        this.mythrilQueue.push(dodo);
+      } else {
+        // If the audit was not successful, send the results to the app
+        const results = {
+          success: auditResults.success,
+          goPlusAudit: auditResults.data,
+          mythrilAudit: null,
+          timestamp: new Date().toISOString(),
+        };
+
+        // Send the results to the app
+        this.app.processAudit(dodo.id, results);
+      }
+
+      // Remove the dodo from the GoPlus Queue
+      this.goPlusQueue = this.goPlusQueue.filter((item) => item.id !== dodo.id);
+    } finally {
+      // Remove the dodo from the running audits
+      this.goPlusRunning.delete(dodo.id);
+    }
+  }
+
+  /**
+   * Processes the Mythril audit
+   * @param {DodoEgg} dodo
+   */
+  async processMythrilAudit(dodo) {
+    try {
+      // Run the audit
+      const auditResults = await this.mythrilAudit(
+        dodo.chainId,
+        dodo.newTokenAddress
+      );
+
+      // Format the results
+      const results = {
+        success: dodo.goPlusResults.success && auditResults.success,
+        goPlusAudit: { ...dodo.goPlusResults },
+        mythrilAudit: { ...auditResults },
+        timestamp: new Date().toISOString(),
+      };
+
+      // Send the results to the app
+      this.app.processAudit(dodo.id, results);
+
+      // Remove the dodo from the Mythril Queue
+      this.mythrilQueue = this.mythrilQueue.filter(
+        (item) => item.id !== dodo.id
+      );
+    } finally {
+      // Remove the dodo from the running audits
+      this.mythrilInstances--;
+      dodo.running = false;
+    }
   }
 }
 

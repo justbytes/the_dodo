@@ -9,62 +9,10 @@ class GoPlusAudit {
    * @constructor
    * @description This constructor is used to initialize the GoPlusAudit class
    */
-  constructor() {
-    this.counter = 0;
-    this.queue = [];
-    this.intervalId = null;
-  }
-
-  /**
-   * Starts the GoPlus audit queue processing
-   */
-  startGoPlusQueue() {
-    if (this.intervalQueue) {
-      console.log("Audit queue is already running");
-      return;
-    }
-
-    // Gives GoPlus a one minute break every 30 minutes
-    this.intervalQueue = setInterval(async () => {
-      console.log("*******   CHECKING GOPLUS AUDIT QUEUE   *******");
-      console.log("");
-      // Allow for 30 more GoPlusAudits to be called
-      this.counter = 0;
-
-      // Storage var for the number of audits to run
-      let auditsToRun = 0;
-
-      // Get the number of audits to run
-      if (this.queue.length === 0) {
-        return;
-      } else if (this.queue.length > 30) {
-        auditsToRun = 30;
-      } else {
-        auditsToRun = this.queue.length;
-      }
-
-      // Run the audits
-      for (let i = 0; i < auditsToRun; i++) {
-        // Get the audit from the queue
-        const { chainId, newTokenAddress } = this.queue[i];
-
-        // Run the audit
-        await this.main(chainId, newTokenAddress);
-
-        // Wait for 1 second before running the next audit
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
-    }, 60000); // 60 seconds
-  }
-
-  /**
-   * Stops the GoPlus audit queue processing
-   */
-  stopGoPlusQueue() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
-    }
+  constructor(parent, chainId, newTokenAddress) {
+    this.parent = parent;
+    this.chainId = chainId;
+    this.newTokenAddress = newTokenAddress;
   }
 
   /**
@@ -73,18 +21,21 @@ class GoPlusAudit {
    * @param {string} targetAddress
    * @returns {object} malicious results
    */
-  async maliciousCheck(chainId, targetAddress) {
+  async maliciousCheck() {
     // Wait for 1 second if counter is greater than 30
-    while (this.counter >= 30) {
+    while (this.parent.goPlusCalls >= 30) {
       await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     try {
       // Get the address security data
-      const response = await GoPlus.addressSecurity(chainId, targetAddress);
+      const response = await GoPlus.addressSecurity(
+        this.chainId,
+        this.newTokenAddress
+      );
 
       // Increment the number of audits calls
-      this.counter++;
+      this.parent.goPlusCalls++;
       return response.result;
     } catch (error) {
       console.log(
@@ -102,7 +53,7 @@ class GoPlusAudit {
    * @param {string} targetAddress
    * @returns {object} security data
    */
-  async fetchSecurityData(chainId, targetAddress) {
+  async fetchSecurityData() {
     const MAX_RETRIES = 12;
     const RETRY_DELAY = 10000; // 10 seconds
     const TIMEOUT = 45;
@@ -112,17 +63,21 @@ class GoPlusAudit {
     const fetchData = async () => {
       let response;
       // Wait for the counter to be less than 30
-      while (this.counter >= 30) {
+      while (this.parent.goPlusCalls >= 30) {
         await new Promise((resolve) => setTimeout(resolve, 1000));
       }
 
       // Make the GoPlus Data
       try {
         // Make the GoPlus API call
-        response = await GoPlus.tokenSecurity(chainId, targetAddress, TIMEOUT);
+        response = await GoPlus.tokenSecurity(
+          this.chainId,
+          this.newTokenAddress,
+          TIMEOUT
+        );
 
         // Increment the number of audits calls
-        this.counter++;
+        this.parent.goPlusCalls++;
       } catch (error) {
         // Retry if it fails 12 times
         if (retryCount < MAX_RETRIES) {
@@ -261,42 +216,26 @@ class GoPlusAudit {
    * @param {string} newTokenAddress
    * @returns {object} audit results
    */
-  async main(chainId, newTokenAddress) {
-    // Check if the newTokenAddress is already in the queue
-    const recorded = this.queue.some(
-      (queueItem) => queueItem.newTokenAddress === newTokenAddress
+  async main() {
+    // Get the security results
+    const securityResults = await this.securityCheck(
+      this.chainId,
+      this.newTokenAddress
     );
 
-    // If there are 30 audits called within the minute, add the new audit to the queue
-    if (this.counter >= 30) {
-      // If the newTokenAddress is already in the queue, return
-      if (recorded) {
-        return;
-      }
-
-      // Token is not in queue, add it
-      this.queue.push({ chainId, newTokenAddress });
-      return;
+    if (!securityResults.success) {
+      return {
+        success: false,
+        data: { ...securityResults.data },
+        reason: securityResults.reason,
+      };
     }
-
-    // Get the security results
-    const securityResults = await this.securityCheck(chainId, newTokenAddress);
 
     // Get the malicious results
     const maliciousResults = await this.maliciousCheck(
-      chainId,
-      newTokenAddress
+      this.chainId,
+      this.newTokenAddress
     );
-
-    // Remove the audit from the queue if it was recorded
-    if (recorded) {
-      this.queue = this.queue.filter(
-        (item) =>
-          !(
-            item.chainId === chainId && item.newTokenAddress === newTokenAddress
-          )
-      );
-    }
 
     return {
       success: securityResults.success,
@@ -306,5 +245,5 @@ class GoPlusAudit {
   }
 }
 
-// Export a factory function that creates a new instance
-module.exports = GoPlusAudit;
+module.exports = (parent, chainId, newTokenAddress) =>
+  new GoPlusAudit(parent, chainId, newTokenAddress).main();

@@ -2,6 +2,7 @@ const { ethers } = require("ethers");
 const { Alchemy, Interface } = require("alchemy-sdk");
 const getAlchemySettings = require("./utils/getAlchemySettings");
 const checkIfTokenIsNew = require("./utils/newTokenChecker");
+const WebSocket = require("ws");
 
 const {
   abi: UniswapV3FactoryABI,
@@ -16,9 +17,9 @@ class V3TokenPairListener {
    * @param {string} factoryAddress
    * @param {number} chainId
    */
-  constructor(app, factoryAddress, chainId) {
+  constructor(factoryAddress, chainId) {
     this.totalSent = 0;
-    this.app = app;
+    this.server = new WebSocket("ws://localhost:8069");
     this.factoryAddress = factoryAddress;
     this.chainId = chainId;
     this.provider = new Alchemy(getAlchemySettings(chainId));
@@ -29,16 +30,24 @@ class V3TokenPairListener {
    * Activates a listener for a pair that is created on the Uniswap v3 protocol
    */
   activateListener() {
-    // Filter for PoolCreated events indicating a new pool
-    const filter = {
-      address: this.factoryAddress,
-      topics: [FACTORY_V3_INTERFACE.getEvent("PoolCreated").topicHash],
-    };
+    console.log("************* | Activating V3 listener | *************");
+    try {
+      // Filter for PoolCreated events indicating a new pool
+      const filter = {
+        address: this.factoryAddress,
+        topics: [FACTORY_V3_INTERFACE.getEvent("PoolCreated").topicHash],
+      };
 
-    // Activate the listener
-    this.provider.ws.on(filter, (log) => {
-      this.processEventLog(log);
-    });
+      // Activate the listener
+      this.provider.ws.on(filter, (log) => {
+        this.processEventLog(log);
+      });
+    } catch (error) {
+      console.error(
+        `There was an error activating the ${this.chainId} V3 listener.\n` +
+          error
+      );
+    }
   }
 
   /**
@@ -75,8 +84,8 @@ class V3TokenPairListener {
       fee: fee,
     };
 
-    // Send it to the app
-    await this.app.auditDodo(this.bigIntSafeSerialize(data));
+    // Send it to the server
+    this.server.send(this.bigIntSafeSerialize(data));
 
     // Increment the total sent
     this.totalSent++;

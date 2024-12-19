@@ -9,13 +9,7 @@ const UNISWAP_JSON = path.join(__dirname, "../data/uniswap.json");
 const rawUniswapData = fs.readFileSync(UNISWAP_JSON);
 const UNISWAP = JSON.parse(rawUniswapData);
 
-/**
- * Starts the program by activating listeners on all Uniswap v3 and v2 protocols
- */
-const main = async () => {
-  // Start websocket server
-  const app = new App();
-
+const activateListeners = () => {
   // Loop through each Uniswap protocol and activate listeners
   for (let i = 0; i < UNISWAP.length; i++) {
     let name = UNISWAP[i].name;
@@ -24,31 +18,35 @@ const main = async () => {
     let v3Factory = UNISWAP[i].v3.factory;
 
     // Start V2 listener
-    try {
-      if (v2Factory != null) {
-        new V2TokenPairListener(app, v2Factory, chainId);
-      }
-    } catch (error) {
-      console.error(
-        `There was an error activating the ${chainId} V2 listener. | index.js\n` +
-          error
-      );
+    if (v2Factory != null) {
+      new V2TokenPairListener(v2Factory, chainId);
     }
 
     // Start V3 listener
-    try {
-      if (v3Factory != null) {
-        new V3TokenPairListener(app, v3Factory, chainId);
-      }
-    } catch (error) {
-      console.error(
-        `There was an error activating the ${chainId} V3 listener. | index.js\n` +
-          error
-      );
+    if (v3Factory != null) {
+      new V3TokenPairListener(v3Factory, chainId);
     }
   }
+};
 
-  console.log("Welcome to the Dodo Finder!");
+/**
+ * Starts the program by activating listeners on all Uniswap v3 and v2 protocols
+ */
+const main = () => {
+  try {
+    // New instance of the app
+    const app = new App();
+
+    // Activate listeners
+    activateListeners();
+
+    // Start the app
+    app.start();
+
+    console.log("Welcome to the Dodo Finder!");
+  } catch (error) {
+    console.error(`There was an error starting the program\n` + error);
+  }
 };
 
 main();

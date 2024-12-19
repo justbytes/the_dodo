@@ -8,7 +8,8 @@ const getInfuraSettings = require("../../utils/getInfuraSettings");
  * @description This class is used to run the Mythril audit on the new token
  */
 class MythrilAudit {
-  constructor(chainId, newTokenAddress) {
+  constructor(parent, chainId, newTokenAddress) {
+    this.parent = parent;
     this.chainId = chainId;
     this.newTokenAddress = newTokenAddress;
     this.results;
@@ -37,10 +38,9 @@ class MythrilAudit {
     // If we made it to this line the audit was successful but has more than 0 issues.
     // Loop through issues and catch high severity issues
     for (const issue of data.issues) {
-      // Catch high severity issues
       if (issue.severity === "High") {
-        // Function name() and symbol() are not issues on Base // This isn't confirmed yet...
-        if (this.chainId == 8453) {
+        // Check if we're on Base chain (8453)
+        if (Number(this.chainId) === 8453) {
           // Known safe functions on Base chain
           const safeFunctions = [
             "name()",
@@ -49,17 +49,15 @@ class MythrilAudit {
             "symbol() or link_classic_internal(uint64,int64)",
           ];
 
-          // Check if the function is in the safe functions array
-          if (safeFunctions.includes(issue.function)) {
-            // Continue to the next issue
-            continue;
-          } else {
-            // Set the success to false
+          // Only fail if the function is NOT in the safeFunctions list
+          if (!safeFunctions.includes(issue.function)) {
             data.success = false;
-
-            // Stop and return the data
             return data;
           }
+        } else {
+          // For non-Base chains, any High severity issue should fail
+          data.success = false;
+          return data;
         }
       }
     }
@@ -86,6 +84,8 @@ class MythrilAudit {
       // If there is an error, return false
       if (stderr) {
         console.error("| mythrilAudit.js | stderr:", stderr);
+
+        // Return the error
         return stderr;
       }
 
@@ -94,6 +94,10 @@ class MythrilAudit {
     } catch (error) {
       // Error code 1 happens because of the --execution-timeout flag but still has the results
       if (error.code === 1) {
+        // Decrement the mythril instances tracker
+        this.parent.mythrilInstances--;
+
+        // Return the results
         return this.proccessedResults(error.stdout);
       }
 
@@ -109,5 +113,5 @@ class MythrilAudit {
   }
 }
 
-module.exports = (chainId, newTokenAddress) =>
-  new MythrilAudit(chainId, newTokenAddress).main();
+module.exports = (parent, chainId, newTokenAddress) =>
+  new MythrilAudit(parent, chainId, newTokenAddress).main();
