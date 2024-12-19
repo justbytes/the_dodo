@@ -67,8 +67,6 @@ class Audit {
    * @param {DodoEgg} dodoEgg
    */
   add(data) {
-    console.log("Audit received data");
-
     // Create an object to store the audit data
     const dodo = {
       id: data.id,
